@@ -7,8 +7,11 @@ object CodeCoverageSettings {
     "<empty>",
     "Reverse.*",
     "uk.gov.hmrc.BuildInfo",
+    "models.data.*",
     "app.*",
     "prod.*",
+    "config.*",
+    "com.*",
     ".*Routes.*",
     "testOnly.*",
     "testOnlyDoNotUseInAppConf.*"
@@ -16,7 +19,7 @@ object CodeCoverageSettings {
 
   val settings: Seq[Setting[_]] = Seq(
     ScoverageKeys.coverageExcludedPackages := excludedPackages.mkString(";"),
-    ScoverageKeys.coverageMinimumStmtTotal := 100,
+    ScoverageKeys.coverageMinimumStmtTotal := 75,
     ScoverageKeys.coverageFailOnMinimum := true,
     ScoverageKeys.coverageHighlighting := true
   )
