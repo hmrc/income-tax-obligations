@@ -6,7 +6,7 @@ import uk.gov.hmrc.DefaultBuildSettings.*
 import uk.gov.hmrc.DefaultBuildSettings
 import uk.gov.hmrc.versioning.SbtGitVersioning.autoImport.majorVersion
 
-val appName = "income-tax-business-details"
+val appName = "income-tax-obligations"
 val currentScalaVersion = "3.3.6"
 ThisBuild / majorVersion := 0
 
@@ -52,7 +52,7 @@ lazy val microservice = Project("income-tax-obligations", file("."))
       "-Wunused:explicits",
       "-Wunused:privates"
     ),
-    PlayKeys.playDefaultPort := 9089
+    PlayKeys.playDefaultPort := 9076
   )
 lazy val it = project
   .enablePlugins(PlayScala)
