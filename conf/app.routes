@@ -1,3 +1,6 @@
 # microservice specific routes
 
 GET        /hello-world             uk.gov.hmrc.incometaxobligations.controllers.MicroserviceHelloWorldController.hello
+
+GET        /:nino/open-obligations                                   uk.gov.hmrc.incometaxobligations.controllers.ObligationsController.getOpenObligations(nino)
+GET        /:nino/obligations/from/:from/to/:to                      uk.gov.hmrc.incometaxobligations.controllers.ObligationsController.getAllObligations(nino, from, to)

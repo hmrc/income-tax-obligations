@@ -17,11 +17,26 @@
 package uk.gov.hmrc.incometaxobligations.config
 
 import javax.inject.{Inject, Singleton}
-import play.api.Configuration
+import uk.gov.hmrc.play.bootstrap.config.ServicesConfig
 
 @Singleton
-class AppConfig @Inject()(config: Configuration) {
+class AppConfig @Inject()(servicesConfig: ServicesConfig) {
 
-  val appName: String = config.get[String]("appName")
+  private def loadConfig(key: String) = servicesConfig.getString(key)
+
+  val appName: String = servicesConfig.getString("appName")
+
+  val desUrl: String = loadConfig("microservice.services.des.url")
+  val desEnvironment: String = loadConfig("microservice.services.des.environment")
+  val desToken: String = s"Bearer ${loadConfig("microservice.services.des.authorization-token")}"
+
+  val desAuthHeaders: Seq[(String, String)] = {
+    Seq(
+      "Environment" -> desEnvironment,
+      "Authorization" -> desToken
+    )
+  }
+
+  val confidenceLevel: Int = servicesConfig.getInt("auth.confidenceLevel")
 
 }
