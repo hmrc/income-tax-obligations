@@ -16,8 +16,13 @@
 
 package uk.gov.hmrc.incometaxobligations.config
 
+import uk.gov.hmrc.http.HeaderNames
+import uk.gov.hmrc.incometaxobligations.models.hip.HipApi
+
 import javax.inject.{Inject, Singleton}
 import uk.gov.hmrc.play.bootstrap.config.ServicesConfig
+
+import java.util.{Base64, UUID}
 
 @Singleton
 class AppConfig @Inject()(servicesConfig: ServicesConfig) {
@@ -36,6 +41,28 @@ class AppConfig @Inject()(servicesConfig: ServicesConfig) {
       "Environment" -> desEnvironment,
       "Authorization" -> desToken
     )
+  }
+  lazy val hipUrl: String = servicesConfig.baseUrl("hip")
+
+  private def getHipCredentials: String = {
+    val clientId = loadConfig(s"microservice.services.hip.clientId")
+    val secret = loadConfig(s"microservice.services.hip.secret")
+
+    val encoded = Base64.getEncoder.encodeToString(s"$clientId:$secret".getBytes("UTF-8"))
+
+    s"Basic $encoded"
+  }
+
+  def getHIPHeaders(hipApi: HipApi, messageTypeHeaderValue: Option[String] = None): Seq[(String, String)] = {
+    val additionalHeaders: Seq[(String, String)] = {
+      hipApi match {
+        case _ => Seq.empty
+      }
+    }
+    messageTypeHeaderValue.map(mtv => Seq(("X-Message-Type", mtv))).getOrElse(Seq()) ++ Seq(
+      (HeaderNames.authorisation, getHipCredentials),
+      ("correlationId", UUID.randomUUID().toString)
+    ) ++ additionalHeaders
   }
 
   val confidenceLevel: Int = servicesConfig.getInt("auth.confidenceLevel")
