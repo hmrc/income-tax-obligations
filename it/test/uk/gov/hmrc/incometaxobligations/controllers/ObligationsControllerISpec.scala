@@ -138,7 +138,7 @@ class ObligationsControllerISpec extends ComponentSpecBase {
         And("I wiremock stub a successful Get Report Deadlines response")
         DesReportDeadlinesStub.stubGetDesOpenReportDeadlines(testNino)
 
-        When(s"I call GET /income-tax-view-change/$testNino/report-deadlines")
+        When(s"I call GET /income-tax-obligations/$testNino/report-deadlines")
         val res = IncomeTaxViewChange.getOpenObligations(testNino)
 
         DesReportDeadlinesStub.verifyGetOpenDesReportDeadlines(testNino)
@@ -159,7 +159,7 @@ class ObligationsControllerISpec extends ComponentSpecBase {
         And("I wiremock stub an unsuccessful Get Report Deadlines response")
         DesReportDeadlinesStub.stubGetDesOpenReportDeadlinesError(testNino)
 
-        When(s"I call GET /income-tax-view-change/$testNino/report-deadlines")
+        When(s"I call GET /income-tax-obligations/$testNino/report-deadlines")
         val res = IncomeTaxViewChange.getOpenObligations(testNino)
 
         DesReportDeadlinesStub.verifyGetOpenDesReportDeadlines(testNino)
@@ -176,7 +176,7 @@ class ObligationsControllerISpec extends ComponentSpecBase {
 
         isAuthorised(false)
 
-        When(s"I call GET /income-tax-view-change/$testNino/report-deadlines")
+        When(s"I call GET /income-tax-obligations/$testNino/report-deadlines")
         val res = IncomeTaxViewChange.getOpenObligations(testNino)
 
         res should have(
