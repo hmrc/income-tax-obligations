@@ -16,13 +16,14 @@
 
 package uk.gov.hmrc.incometaxobligations.controllers
 
-import uk.gov.hmrc.incometaxobligations.constants.BaseIntegrationTestConstants._
-import uk.gov.hmrc.incometaxobligations.constants.ReportDeadlinesIntegrationTestConstants._
+import uk.gov.hmrc.incometaxobligations.constants.BaseIntegrationTestConstants.*
+import uk.gov.hmrc.incometaxobligations.constants.ReportDeadlinesIntegrationTestConstants.*
 import uk.gov.hmrc.incometaxobligations.helpers.ComponentSpecBase
-import uk.gov.hmrc.incometaxobligations.helpers.servicemocks.DesReportDeadlinesStub
+import uk.gov.hmrc.incometaxobligations.helpers.servicemocks.{DesReportDeadlinesStub, ViewAndChangeStub}
 import uk.gov.hmrc.incometaxobligations.models.obligations.ObligationStatus.Open
 import uk.gov.hmrc.incometaxobligations.models.obligations.{ObligationsErrorModel, ObligationsModel}
-import play.api.http.Status._
+import play.api.http.Status.*
+import play.api.libs.json.Json
 
 class ObligationsControllerISpec extends ComponentSpecBase {
 
@@ -62,12 +63,30 @@ class ObligationsControllerISpec extends ComponentSpecBase {
               jsonBodyAs[ObligationsModel](obligationsModelWithStatus(testNino, Open.name))
             )
           }
+
+          "the call to DES fails but viewAndChange return status is Open" in {
+            isAuthorised(true)
+            val successResponse = obligationsModelWithStatus(testNino, Open.name)
+            DesReportDeadlinesStub.stubGetDesAllObligationsError(testNino, from, to)(OK, "{}")
+            ViewAndChangeStub.stubGetAllObligations(testNino, from, to, "200", Json.toJson(successResponse).toString)
+
+            val res = IncomeTaxViewChange.getAllObligations(testNino, from, to)
+
+            DesReportDeadlinesStub.verifyGetDesAllObligations(testNino, from, to)
+
+            res should have(
+              httpStatus(OK),
+              jsonBodyAs[ObligationsModel](successResponse)
+            )
+          }
         }
         s"return $INTERNAL_SERVER_ERROR" when {
           "the response retrieved is invalid" in {
             isAuthorised(true)
 
+            val error = ObligationsErrorModel(INTERNAL_SERVER_ERROR, "Json Validation Error. Parsing Report Deadlines Data")
             DesReportDeadlinesStub.stubGetDesAllObligationsError(testNino, from, to)(OK, "{}")
+            ViewAndChangeStub.stubGetAllObligationsError(testNino, from, to)(INTERNAL_SERVER_ERROR, "Json Validation Error. Parsing Report Deadlines Data")
 
             val res = IncomeTaxViewChange.getAllObligations(testNino, from, to)
 
@@ -75,7 +94,7 @@ class ObligationsControllerISpec extends ComponentSpecBase {
 
             res should have(
               httpStatus(INTERNAL_SERVER_ERROR),
-              jsonBodyAs[ObligationsErrorModel](ObligationsErrorModel(INTERNAL_SERVER_ERROR, "Json Validation Error. Parsing Report Deadlines Data"))
+              jsonBodyAs[ObligationsErrorModel](error)
             )
           }
         }
@@ -83,6 +102,7 @@ class ObligationsControllerISpec extends ComponentSpecBase {
           isAuthorised(true)
 
           DesReportDeadlinesStub.stubGetDesAllObligationsError(testNino, from, to)(NOT_FOUND, "Error, not found")
+          ViewAndChangeStub.stubGetAllObligationsError(testNino, from, to)(NOT_FOUND, "Error, not found")
 
           val res = IncomeTaxViewChange.getAllObligations(testNino, from, to)
 

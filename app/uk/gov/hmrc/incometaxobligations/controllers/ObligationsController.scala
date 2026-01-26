@@ -19,9 +19,9 @@ package uk.gov.hmrc.incometaxobligations.controllers
 import play.api.Logging
 import play.api.libs.json.Json
 import play.api.mvc.{Action, AnyContent, ControllerComponents, Result}
-import uk.gov.hmrc.incometaxobligations.connectors.ObligationsConnector
 import uk.gov.hmrc.incometaxobligations.controllers.predicates.AuthenticationPredicate
 import uk.gov.hmrc.incometaxobligations.models.obligations.{ObligationsErrorModel, ObligationsModel, ObligationsResponseModel}
+import uk.gov.hmrc.incometaxobligations.services.ObligationsService
 import uk.gov.hmrc.play.bootstrap.backend.controller.BackendController
 
 import javax.inject.{Inject, Singleton}
@@ -29,7 +29,7 @@ import scala.concurrent.ExecutionContext
 
 @Singleton
 class ObligationsController @Inject()(val authentication: AuthenticationPredicate,
-                                      val obligationsConnector: ObligationsConnector,
+                                      val obligationsService: ObligationsService,
                                       cc: ControllerComponents
                                      )(implicit ec: ExecutionContext) extends BackendController(cc) with Logging {
   private def handleObligationsResponse(response: ObligationsResponseModel): Result = {
@@ -46,7 +46,7 @@ class ObligationsController @Inject()(val authentication: AuthenticationPredicat
   def getOpenObligations(nino: String): Action[AnyContent] = authentication.async { implicit request =>
     logger.debug("" +
       s"Requesting obligations for nino: $nino")
-    obligationsConnector.getOpenObligations(nino).map(response =>
+    obligationsService.getOpenObligations(nino).map(response =>
       handleObligationsResponse(response)
     )
   }
@@ -54,7 +54,7 @@ class ObligationsController @Inject()(val authentication: AuthenticationPredicat
   def getAllObligations(nino: String, from: String, to: String): Action[AnyContent] = authentication.async { implicit request =>
     logger.debug("" +
       s"Requesting obligations for nino: $nino, from: $from, to: $to")
-    obligationsConnector.getAllObligationsWithinDateRange(nino, from, to).map(response =>
+    obligationsService.getAllObligationsWithinDateRange(nino, from, to).map(response =>
       handleObligationsResponse(response)
     )
   }

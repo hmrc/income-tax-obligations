@@ -16,19 +16,19 @@
 
 package uk.gov.hmrc.incometaxobligations.controllers
 
-import uk.gov.hmrc.incometaxobligations.constants.BaseTestConstants._
-import uk.gov.hmrc.incometaxobligations.constants.ObligationsTestConstants._
-import uk.gov.hmrc.incometaxobligations.connectors.ObligationsConnector
-import uk.gov.hmrc.incometaxobligations.controllers.predicates.AuthenticationPredicate
-import uk.gov.hmrc.incometaxobligations.mocks.MockMicroserviceAuthConnector
-import org.mockito.ArgumentMatchers.{any, eq => matches}
+import org.mockito.ArgumentMatchers.{any, eq as matches}
 import org.mockito.Mockito.{mock, when}
 import play.api.http.Status
 import play.api.libs.json.Json
-import play.api.mvc._
+import play.api.mvc.*
 import play.api.test.FakeRequest
-import play.api.test.Helpers._
+import play.api.test.Helpers.*
 import uk.gov.hmrc.auth.core.MissingBearerToken
+import uk.gov.hmrc.incometaxobligations.constants.BaseTestConstants.*
+import uk.gov.hmrc.incometaxobligations.constants.ObligationsTestConstants.*
+import uk.gov.hmrc.incometaxobligations.controllers.predicates.AuthenticationPredicate
+import uk.gov.hmrc.incometaxobligations.mocks.MockMicroserviceAuthConnector
+import uk.gov.hmrc.incometaxobligations.services.ObligationsService
 import uk.gov.hmrc.incometaxobligations.utils.TestSupport
 
 import scala.concurrent.Future
@@ -38,12 +38,12 @@ class ObligationsControllerSpec extends TestSupport with MockMicroserviceAuthCon
 
   trait Setup {
     val cc: ControllerComponents = stubControllerComponents()
-    val obligationsConnector: ObligationsConnector = mock(classOf[ObligationsConnector])
+    val obligationsService: ObligationsService = mock(classOf[ObligationsService])
     val authenticationPredicate: AuthenticationPredicate = new AuthenticationPredicate(mockMicroserviceAuthConnector, cc, microserviceAppConfig)
 
     val controller = new ObligationsController(
       authenticationPredicate,
-      obligationsConnector,
+      obligationsService,
       cc
     )
   }
@@ -51,7 +51,7 @@ class ObligationsControllerSpec extends TestSupport with MockMicroserviceAuthCon
   "getOpenObligations" should {
     s"return ${Status.OK} with valid report deadlines" in new Setup {
       mockAuth()
-      when(obligationsConnector.getOpenObligations(matches(testNino))(any()))
+      when(obligationsService.getOpenObligations(matches(testNino))(any(), any()))
         .thenReturn(Future.successful(testObligations))
 
       val result: Future[Result] = controller.getOpenObligations(testNino)(FakeRequest())
@@ -63,7 +63,7 @@ class ObligationsControllerSpec extends TestSupport with MockMicroserviceAuthCon
 
     "return the status of the error model when the connector returns one" in new Setup {
       mockAuth()
-      when(obligationsConnector.getOpenObligations(matches(testNino))(any()))
+      when(obligationsService.getOpenObligations(matches(testNino))(any(), any()))
         .thenReturn(Future.successful(testReportDeadlinesError))
 
       val result: Future[Result] = controller.getOpenObligations(testNino)(FakeRequest())
@@ -85,7 +85,7 @@ class ObligationsControllerSpec extends TestSupport with MockMicroserviceAuthCon
     s"return ${Status.OK}" when {
       "valid obligations are returned from the connector" in new Setup {
         mockAuth()
-        when(obligationsConnector.getAllObligationsWithinDateRange(matches(testNino), matches("2020-04-06"), matches("2021-04-05"))(any()))
+        when(obligationsService.getAllObligationsWithinDateRange(matches(testNino), matches("2020-04-06"), matches("2021-04-05"))(any(),any()))
           .thenReturn(Future.successful(testObligations))
 
         val result: Future[Result] = controller.getAllObligations(nino = testNino, from = "2020-04-06", to = "2021-04-05")(FakeRequest())
@@ -98,7 +98,7 @@ class ObligationsControllerSpec extends TestSupport with MockMicroserviceAuthCon
     "return the status of the error model" when {
       "an error model is returned from the connector" in new Setup {
         mockAuth()
-        when(obligationsConnector.getAllObligationsWithinDateRange(matches(testNino), matches("2020-04-06"), matches("2021-04-05"))(any()))
+        when(obligationsService.getAllObligationsWithinDateRange(matches(testNino), matches("2020-04-06"), matches("2021-04-05"))(any(), any()))
           .thenReturn(Future.successful(testReportDeadlinesError))
 
         val result: Future[Result] = controller.getAllObligations(nino = testNino, from = "2020-04-06", to = "2021-04-05")(FakeRequest())

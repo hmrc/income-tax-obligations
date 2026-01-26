@@ -45,7 +45,9 @@ trait ComponentSpecBase extends TestSuite with CustomMatchers
   def config: Map[String, String] = Map(
     "microservice.services.auth.host" -> mockHost,
     "microservice.services.auth.port" -> mockPort,
-    "microservice.services.des.url" -> mockUrl
+    "microservice.services.des.url" -> mockUrl,
+    "microservice.services.income-tax-view-change.host" -> mockHost,
+    "microservice.services.income-tax-view-change.port" -> mockPort
   )
 
   override implicit lazy val app: Application = new GuiceApplicationBuilder()
