@@ -46,6 +46,8 @@ trait ComponentSpecBase extends TestSuite with CustomMatchers
     "microservice.services.auth.host" -> mockHost,
     "microservice.services.auth.port" -> mockPort,
     "microservice.services.des.url" -> mockUrl,
+    "microservice.services.hip.host" -> mockHost,
+    "microservice.services.hip.port" -> mockPort,
     "microservice.services.income-tax-view-change.host" -> mockHost,
     "microservice.services.income-tax-view-change.port" -> mockPort
   )
