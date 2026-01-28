@@ -4,3 +4,6 @@ GET        /hello-world             uk.gov.hmrc.incometaxobligations.controllers
 
 GET        /:nino/open-obligations                                   uk.gov.hmrc.incometaxobligations.controllers.ObligationsController.getOpenObligations(nino)
 GET        /:nino/obligations/from/:from/to/:to                      uk.gov.hmrc.incometaxobligations.controllers.ObligationsController.getAllObligations(nino, from, to)
+
+GET         /itsa-status/status/:nino/:year                          uk.gov.hmrc.incometaxobligations.controllers.ITSAStatusController.getITSAStatus(nino,year,futureYears:Boolean,history:Boolean)
+PUT         /itsa-status/update/:nino                                uk.gov.hmrc.incometaxobligations.controllers.ITSAStatusController.updateItsaStatus(nino)
