@@ -36,6 +36,7 @@ object OptOutUpdateRequestModel {
   case class OptOutBadRequestFailure(origin: String, response: List[OptOutTypeErrorItem])
 
   case class OptOutResponseModel(failures: List[OptOutTypeErrorItem])
+  case class OptOutErrorModel(failures: List[ErrorItem])
   case class OptOutBackendFailure(origin: String, response: OptOutResponseModel)
 
   case class OptOutUnprocessableEntityFailure(errorCode: String, errorDescription: String)
@@ -57,6 +58,7 @@ object OptOutUpdateRequestModel {
   implicit val formatOptOutTypeErrorItemModel: Format[OptOutTypeErrorItem] = Json.format[OptOutTypeErrorItem]
   implicit val formatBadRequestFailure: Format[OptOutBadRequestFailure] = Json.format[OptOutBadRequestFailure]
   implicit val formatOptOutResponseModel: Format[OptOutResponseModel] = Json.format[OptOutResponseModel]
+  implicit val formatOptOutErrorItemModel: Format[OptOutErrorModel] = Json.format[OptOutErrorModel]
   implicit val formatOptOutBackendFailure: Format[OptOutBackendFailure] = Json.format[OptOutBackendFailure]
   implicit val formatOptOutUnprocessableEntityFailure: Format[OptOutUnprocessableEntityFailure] = Json.format[OptOutUnprocessableEntityFailure]
 }

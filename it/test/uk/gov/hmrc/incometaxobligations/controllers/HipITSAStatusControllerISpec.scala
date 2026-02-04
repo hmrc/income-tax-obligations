@@ -20,7 +20,7 @@ import uk.gov.hmrc.incometaxobligations.connectors.hip.ITSAStatusConnector.Corre
 import uk.gov.hmrc.incometaxobligations.connectors.itsastatus.OptOutUpdateRequestModel.{ErrorItem, OptOutUpdateRequest, OptOutUpdateResponseFailure, OptOutUpdateResponseSuccess, optOutUpdateReason}
 import uk.gov.hmrc.incometaxobligations.constants.ITSAStatusIntegrationTestConstants.*
 import uk.gov.hmrc.incometaxobligations.helpers.ComponentSpecBase
-import uk.gov.hmrc.incometaxobligations.helpers.servicemocks.HipITSAStatusStub
+import uk.gov.hmrc.incometaxobligations.helpers.servicemocks.{HipITSAStatusStub, ViewAndChangeStub}
 import uk.gov.hmrc.incometaxobligations.models.hip.ITSAStatusHipApi
 import uk.gov.hmrc.incometaxobligations.models.itsaStatus.{ITSAStatusResponseError, ITSAStatusResponseModel}
 import play.api.http.Status.{BAD_REQUEST, INTERNAL_SERVER_ERROR, OK, UNAUTHORIZED}
@@ -62,8 +62,7 @@ class HipITSAStatusControllerISpec extends ComponentSpecBase {
           isAuthorised(true)
 
           And("I wiremock stub a badRequest ITSAStatusDetails response")
-          HipITSAStatusStub.stubGetHipITSAStatusDetailsBadRequest()
-
+          ViewAndChangeStub.stubGetHipITSAStatusDetailsBadRequest()
 
           When(s"I call GET /itsa-status/status/$taxableEntityId/$taxYear")
           val res = IncomeTaxViewChange.getITSAStatus(taxableEntityId, taxYear)
@@ -80,12 +79,12 @@ class HipITSAStatusControllerISpec extends ComponentSpecBase {
           isAuthorised(true)
 
           And("I wiremock stub an error response")
-          HipITSAStatusStub.stubGetHipITSAStatusDetailsError()
+          ViewAndChangeStub.stubGetHipITSAStatusDetailsError()
 
           When(s"I call GET /itsa-status/status/$taxableEntityId/$taxYear")
           val res = IncomeTaxViewChange.getITSAStatus(taxableEntityId, taxYear)
 
-          HipITSAStatusStub.verifyGetHipITSAStatusDetails()
+          ViewAndChangeStub.verifyGetHipITSAStatusDetails()
 
           Then("an error response is returned")
 

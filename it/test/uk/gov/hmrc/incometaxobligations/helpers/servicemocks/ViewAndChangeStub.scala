@@ -17,7 +17,9 @@
 package uk.gov.hmrc.incometaxobligations.helpers.servicemocks
 
 import play.api.http.Status
+import play.api.http.Status.{BAD_REQUEST, OK}
 import play.api.libs.json.Json
+import uk.gov.hmrc.incometaxobligations.constants.ITSAStatusIntegrationTestConstants.{errorITSAStatusError, failedFutureITSAStatusError, taxYear, taxableEntityId}
 import uk.gov.hmrc.incometaxobligations.constants.ReportDeadlinesIntegrationTestConstants.*
 import uk.gov.hmrc.incometaxobligations.helpers.WiremockHelper
 import uk.gov.hmrc.incometaxobligations.models.obligations.ObligationsErrorModel
@@ -32,13 +34,27 @@ object ViewAndChangeStub {
     s"/income-tax-view-change/$nino/obligations/from/$from/to/$to"
   }
 
+  def getITSAStatusUrl(taxableEntityId: String, taxYear: String): String = {
+    s"/income-tax-view-change/itsa-status/status/$taxableEntityId?taxYear=$taxYear&futureYears=true&history=true"
+  }
+
   def stubGetAllObligations(nino: String, from: String, to: String, statusCode: String, responseBody: String): Unit = {
-    val desReportDeadlinesResponse = successResponseWithStatus(nino, statusCode).toString
-    WiremockHelper.stubGet(allObligationsUrl(nino, from, to), Status.OK, responseBody)
+    val desReportDeadlinesResponse: String = successResponseWithStatus(nino, statusCode).toString
+    WiremockHelper.stubGet(allObligationsUrl(nino, from, to), OK, responseBody)
   }
 
   def stubGetAllObligationsError(nino: String, from: String, to: String)(status: Int, body: String): Unit = {
     WiremockHelper.stubGet(allObligationsUrl(nino, from, to), status, Json.toJson(ObligationsErrorModel(status, body)).toString)
   }
+
+  def stubGetHipITSAStatusDetailsBadRequest(): Unit = {
+    WiremockHelper.stubGet(getITSAStatusUrl(taxableEntityId, taxYear), BAD_REQUEST, errorITSAStatusError.reason)
+  }
+
+  def stubGetHipITSAStatusDetailsError(): Unit = {
+    WiremockHelper.stubGet(getITSAStatusUrl(taxableEntityId, taxYear), Status.INTERNAL_SERVER_ERROR, failedFutureITSAStatusError.reason)
+  }
+  
+  def verifyGetHipITSAStatusDetails(): Unit = WiremockHelper.verifyGet(getITSAStatusUrl(taxableEntityId, taxYear))
 
 }
