@@ -38,6 +38,10 @@ object ViewAndChangeStub {
     s"/income-tax-view-change/itsa-status/status/$taxableEntityId?taxYear=$taxYear&futureYears=true&history=true"
   }
 
+  def updateItsStatusUrl(taxableEntityId: String) = s"/income-tax-view-change/itsa-status/update/$taxableEntityId"
+
+  val updateUrl: String = updateItsStatusUrl(taxableEntityId)
+
   def stubGetAllObligations(nino: String, from: String, to: String, statusCode: String, responseBody: String): Unit = {
     val desReportDeadlinesResponse: String = successResponseWithStatus(nino, statusCode).toString
     WiremockHelper.stubGet(allObligationsUrl(nino, from, to), OK, responseBody)
@@ -48,13 +52,21 @@ object ViewAndChangeStub {
   }
 
   def stubGetHipITSAStatusDetailsBadRequest(): Unit = {
-    WiremockHelper.stubGet(getITSAStatusUrl(taxableEntityId, taxYear), BAD_REQUEST, errorITSAStatusError.reason)
+    WiremockHelper.stubGet(getITSAStatusUrl(taxableEntityId, taxYear), BAD_REQUEST, Json.toJson(errorITSAStatusError).toString)
   }
 
   def stubGetHipITSAStatusDetailsError(): Unit = {
-    WiremockHelper.stubGet(getITSAStatusUrl(taxableEntityId, taxYear), Status.INTERNAL_SERVER_ERROR, failedFutureITSAStatusError.reason)
+    WiremockHelper.stubGet(getITSAStatusUrl(taxableEntityId, taxYear), Status.INTERNAL_SERVER_ERROR, Json.toJson(failedFutureITSAStatusError).toString)
   }
   
   def verifyGetHipITSAStatusDetails(): Unit = WiremockHelper.verifyGet(getITSAStatusUrl(taxableEntityId, taxYear))
+
+  def stubPutHipITSAStatusUpdate(statusInt: Int, response: String, headers: Map[String, String] = Map.empty): Unit = {
+    WiremockHelper.stubPutWithHeaders(updateUrl, statusInt, response, headers)
+  }
+
+  def stubGetHipITSAStatusDetails(response: String): Unit = {
+    WiremockHelper.stubGet(getITSAStatusUrl(taxableEntityId, taxYear), Status.OK, response)
+  }
 
 }

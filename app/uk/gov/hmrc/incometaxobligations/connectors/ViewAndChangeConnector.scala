@@ -156,7 +156,7 @@ class ViewAndChangeConnector @Inject()(val http: HttpClientV2,
       } recover {
       case ex =>
         logger.error(s"Unexpected failed future, ${ex.getMessage}")
-        Left(ITSAStatusResponseError(INTERNAL_SERVER_ERROR, s"Unexpected failed future, ${ex.getMessage}"))
+        Left(ITSAStatusResponseError(INTERNAL_SERVER_ERROR, "Unexpected failed future"))
     }
   }
 
