@@ -17,7 +17,9 @@
 package uk.gov.hmrc.incometaxobligations.helpers.servicemocks
 
 import play.api.http.Status
+import play.api.http.Status.{BAD_REQUEST, OK}
 import play.api.libs.json.Json
+import uk.gov.hmrc.incometaxobligations.constants.ITSAStatusIntegrationTestConstants.{errorITSAStatusError, failedFutureITSAStatusError, taxYear, taxableEntityId}
 import uk.gov.hmrc.incometaxobligations.constants.ReportDeadlinesIntegrationTestConstants.*
 import uk.gov.hmrc.incometaxobligations.helpers.WiremockHelper
 import uk.gov.hmrc.incometaxobligations.models.obligations.ObligationsErrorModel
@@ -32,13 +34,39 @@ object ViewAndChangeStub {
     s"/income-tax-view-change/$nino/obligations/from/$from/to/$to"
   }
 
+  def getITSAStatusUrl(taxableEntityId: String, taxYear: String): String = {
+    s"/income-tax-view-change/itsa-status/status/$taxableEntityId?taxYear=$taxYear&futureYears=true&history=true"
+  }
+
+  def updateItsStatusUrl(taxableEntityId: String) = s"/income-tax-view-change/itsa-status/update/$taxableEntityId"
+
+  val updateUrl: String = updateItsStatusUrl(taxableEntityId)
+
   def stubGetAllObligations(nino: String, from: String, to: String, statusCode: String, responseBody: String): Unit = {
-    val desReportDeadlinesResponse = successResponseWithStatus(nino, statusCode).toString
-    WiremockHelper.stubGet(allObligationsUrl(nino, from, to), Status.OK, responseBody)
+    val desReportDeadlinesResponse: String = successResponseWithStatus(nino, statusCode).toString
+    WiremockHelper.stubGet(allObligationsUrl(nino, from, to), OK, responseBody)
   }
 
   def stubGetAllObligationsError(nino: String, from: String, to: String)(status: Int, body: String): Unit = {
     WiremockHelper.stubGet(allObligationsUrl(nino, from, to), status, Json.toJson(ObligationsErrorModel(status, body)).toString)
+  }
+
+  def stubGetHipITSAStatusDetailsBadRequest(): Unit = {
+    WiremockHelper.stubGet(getITSAStatusUrl(taxableEntityId, taxYear), BAD_REQUEST, Json.toJson(errorITSAStatusError).toString)
+  }
+
+  def stubGetHipITSAStatusDetailsError(): Unit = {
+    WiremockHelper.stubGet(getITSAStatusUrl(taxableEntityId, taxYear), Status.INTERNAL_SERVER_ERROR, Json.toJson(failedFutureITSAStatusError).toString)
+  }
+  
+  def verifyGetHipITSAStatusDetails(): Unit = WiremockHelper.verifyGet(getITSAStatusUrl(taxableEntityId, taxYear))
+
+  def stubPutHipITSAStatusUpdate(statusInt: Int, response: String, headers: Map[String, String] = Map.empty): Unit = {
+    WiremockHelper.stubPutWithHeaders(updateUrl, statusInt, response, headers)
+  }
+
+  def stubGetHipITSAStatusDetails(response: String): Unit = {
+    WiremockHelper.stubGet(getITSAStatusUrl(taxableEntityId, taxYear), Status.OK, response)
   }
 
 }

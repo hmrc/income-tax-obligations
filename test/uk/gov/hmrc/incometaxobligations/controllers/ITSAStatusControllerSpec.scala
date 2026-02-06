@@ -31,13 +31,13 @@ import uk.gov.hmrc.auth.core.MissingBearerToken
 
 import scala.concurrent.Future
 
-class ITSAStatusControllerSpec extends ControllerBaseSpec with MockMicroserviceAuthConnector with hip.MockITSAStatusConnector {
+class ITSAStatusControllerSpec extends ControllerBaseSpec with MockMicroserviceAuthConnector with hip.MockITSAStatusService {
 
   val mockConfig: AppConfig = mock[AppConfig]
 
   object TestITSAStatusController extends ITSAStatusController(
-    authentication = new AuthenticationPredicate(mockMicroserviceAuthConnector, mockCC, microserviceAppConfig), mockCC,
-    hipConnector = mockHIPITSAStatusConnector
+    new AuthenticationPredicate(mockMicroserviceAuthConnector, mockCC, microserviceAppConfig), mockCC,
+    mockHIPITSAStatusService
   )
 
   lazy val mockCC: ControllerComponents = stubControllerComponents()

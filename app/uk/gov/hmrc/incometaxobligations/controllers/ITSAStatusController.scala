@@ -18,15 +18,16 @@ package uk.gov.hmrc.incometaxobligations.controllers
 
 import uk.gov.hmrc.incometaxobligations.connectors.hip
 import uk.gov.hmrc.incometaxobligations.connectors.hip.ITSAStatusConnector.CorrelationIdHeader
-import uk.gov.hmrc.incometaxobligations.connectors.itsastatus.OptOutUpdateRequestModel._
+import uk.gov.hmrc.incometaxobligations.connectors.itsastatus.OptOutUpdateRequestModel.*
 import uk.gov.hmrc.incometaxobligations.controllers.predicates.AuthenticationPredicate
 import uk.gov.hmrc.incometaxobligations.models.itsaStatus.{ITSAStatusResponseError, ITSAStatusResponseNotFound}
 import org.apache.pekko.util.ByteString
 import play.api.Logging
 import play.api.http.HttpEntity
 import play.api.libs.json.Json
-import play.api.mvc._
+import play.api.mvc.*
 import play.mvc.Http
+import uk.gov.hmrc.incometaxobligations.services.ITSAStatusService
 import uk.gov.hmrc.play.bootstrap.backend.controller.BackendController
 
 import javax.inject.Inject
@@ -34,13 +35,13 @@ import scala.concurrent.{ExecutionContext, Future}
 
 class ITSAStatusController @Inject()(authentication: AuthenticationPredicate,
                                      cc: ControllerComponents,
-                                     hipConnector: hip.ITSAStatusConnector
+                                     itsaStatusService: ITSAStatusService
                                     )
                                     (implicit ec: ExecutionContext) extends BackendController(cc) with Logging {
 
   def getITSAStatus(taxableEntityId: String, taxYear: String, futureYears: Boolean,
                     history: Boolean): Action[AnyContent] = authentication.async { implicit request =>
-    hipConnector.getITSAStatus(
+    itsaStatusService.getITSAStatus(
       taxableEntityId = taxableEntityId,
       taxYear = taxYear,
       futureYears = futureYears, history = history).map {
@@ -60,7 +61,6 @@ class ITSAStatusController @Inject()(authentication: AuthenticationPredicate,
   }
 
   def updateItsaStatus(taxableEntityId: String): Action[AnyContent] = authentication.async { implicit request =>
-
     def toResult(fResponse: Future[OptOutUpdateResponse]): Future[Result] = {
       fResponse.map {
 
@@ -78,7 +78,7 @@ class ITSAStatusController @Inject()(authentication: AuthenticationPredicate,
       json <- request.body.asJson
       optOutUpdateRequest <- json.validate[OptOutUpdateRequest].asOpt
     } yield {
-      hipConnector.requestOptOutForTaxYear(taxableEntityId, optOutUpdateRequest)
+      itsaStatusService.requestOptOutForTaxYear(taxableEntityId, optOutUpdateRequest)
     }
 
     connectorResponse.map(toResult).getOrElse(toResult(Future.successful(OptOutUpdateResponseFailure.defaultFailure())))
