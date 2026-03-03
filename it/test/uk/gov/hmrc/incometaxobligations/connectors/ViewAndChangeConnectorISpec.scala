@@ -35,7 +35,7 @@ class ViewAndChangeConnectorISpec extends ComponentSpecBase {
   val dateTo = "2021-04-05"
   val getOpenObligationsUrl = s"/income-tax-view-change/$testNino/open-obligations"
   val getAllObligationsDateRangeUrl = s"/income-tax-view-change/$testNino/obligations/from/$dateFrom/to/$dateTo"
-  val getITSAStatusUrl = s"/income-tax-view-change/itsa-status/status/$taxableEntityId?taxYear=$taxYear&futureYears=true&history=true"
+  val getITSAStatusUrl = s"/income-tax-view-change/itsa-status/status/$taxableEntityId/$taxYear?futureYears=true&history=true"
 
   val request: OptOutUpdateRequest = OptOutUpdateRequest(taxYear = "19-20", updateReason = "ITSA status update reason")
 

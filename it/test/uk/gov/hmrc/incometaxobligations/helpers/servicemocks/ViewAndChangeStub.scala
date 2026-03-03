@@ -35,7 +35,7 @@ object ViewAndChangeStub {
   }
 
   def getITSAStatusUrl(taxableEntityId: String, taxYear: String): String = {
-    s"/income-tax-view-change/itsa-status/status/$taxableEntityId?taxYear=$taxYear&futureYears=true&history=true"
+    s"/income-tax-view-change/itsa-status/status/$taxableEntityId/$taxYear?futureYears=true&history=true"
   }
 
   def updateItsStatusUrl(taxableEntityId: String) = s"/income-tax-view-change/itsa-status/update/$taxableEntityId"
