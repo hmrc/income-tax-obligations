@@ -16,7 +16,6 @@
 
 package uk.gov.hmrc.incometaxobligations.connectors
 
-import uk.gov.hmrc.incometaxobligations.models.hip.ITSAStatusHipApi
 import uk.gov.hmrc.incometaxobligations.models.itsaStatus.{ITSAStatusResponse, ITSAStatusResponseError, ITSAStatusResponseModel}
 import play.api.Logging
 import play.api.http.Status.*
@@ -98,10 +97,8 @@ class ViewAndChangeConnector @Inject()(val http: HttpClientV2,
     }
   }
 
-  val hipHeaders: Seq[(String, String)] = appConfig.getHIPHeaders(ITSAStatusHipApi)
-
   def getITSAStatusUrl(taxableEntityId: String, taxYear: String, futureYears: String, history: String): String =
-    s"${appConfig.viewAndChangeBaseUrl}/income-tax-view-change/itsa-status/status/$taxableEntityId?taxYear=$taxYear&futureYears=$futureYears&history=$history"
+    s"${appConfig.viewAndChangeBaseUrl}/income-tax-view-change/itsa-status/status/$taxableEntityId/$taxYear?futureYears=$futureYears&history=$history"
 
   def updateItsaStatusUrl(taxableEntityId: String): String =
     s"${appConfig.viewAndChangeBaseUrl}/income-tax-view-change/itsa-status/update/$taxableEntityId"
@@ -126,14 +123,7 @@ class ViewAndChangeConnector @Inject()(val http: HttpClientV2,
                    (implicit headerCarrier: HeaderCarrier): Future[Either[ITSAStatusResponse, List[ITSAStatusResponseModel]]] = {
     
     val url = getITSAStatusUrl(taxableEntityId, taxYear, futureYears.toString, history.toString)
-    
-    logger.info("" +
-      s"Calling GET $url \n\nHeaders: $headerCarrier \nAuth Headers: $hipHeaders")
-    
     http.get(url"$url")
-      .setHeader(
-        hipHeaders: _*
-      )
       .execute[HttpResponse]
       .map { response =>
         response.status match {
@@ -165,7 +155,6 @@ class ViewAndChangeConnector @Inject()(val http: HttpClientV2,
 
     http.put(url"${updateItsaStatusUrl(taxableEntityId)}")
       .withBody(Json.toJson[OptOutUpdateRequest](optOutUpdateRequest))
-      .setHeader(hipHeaders: _*)
       .execute[HttpResponse]
       .map { response =>
         val correlationId = response.headers.get(CorrelationIdHeader).map(_.head).getOrElse(s"Unknown_$CorrelationIdHeader")
