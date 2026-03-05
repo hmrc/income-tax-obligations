@@ -22,15 +22,32 @@ import uk.gov.hmrc.incometaxobligations.connectors.{RawResponseReads, ViewAndCha
 import uk.gov.hmrc.incometaxobligations.connectors.hip.ITSAStatusConnector
 import uk.gov.hmrc.incometaxobligations.connectors.itsastatus.OptOutUpdateRequestModel.{OptOutUpdateRequest, OptOutUpdateResponse, OptOutUpdateResponseSuccess}
 import uk.gov.hmrc.incometaxobligations.models.itsaStatus.{ITSAStatusResponse, ITSAStatusResponseModel}
+import uk.gov.hmrc.incometaxobligations.repositories.ITSAStatusRepository
+import uk.gov.hmrc.mongo.cache.DataKey
 
 import javax.inject.Inject
 import scala.concurrent.{ExecutionContext, Future}
 
-case class ITSAStatusService @Inject()(itsaConnector: ITSAStatusConnector,
+case class ITSAStatusService @Inject()(itsaRepository: ITSAStatusRepository,
+                                       itsaConnector: ITSAStatusConnector,
                                        viewAndChangeConnector: ViewAndChangeConnector) extends RawResponseReads with Logging{
 
   def getITSAStatus(taxableEntityId: String, taxYear: String, futureYears: Boolean, history: Boolean)
                    (implicit headerCarrier: HeaderCarrier, ec: ExecutionContext): Future[Either[ITSAStatusResponse, List[ITSAStatusResponseModel]]] = {
+
+    val dataKey = DataKey[List[ITSAStatusResponseModel]]("ITSA_Status")
+    itsaRepository.getCache[List[ITSAStatusResponseModel]](dataKey).flatMap{
+      case Some(value) => Future.successful(value)
+      case _ =>
+        itsaConnector.getITSAStatus(taxableEntityId, taxYear, futureYears, history).flatMap{
+          case Right(success)  => itsaRepository.updateCache(dataKey, success)
+            Future.successful(Right(success))
+          case _ => val data = viewAndChangeConnector.getITSAStatus(taxableEntityId, taxYear, futureYears, history)
+            itsaRepository.updateCache(dataKey, data)
+
+      }
+    }
+
     itsaConnector.getITSAStatus(taxableEntityId, taxYear, futureYears, history).flatMap{
       case Right(success)  => Future.successful(Right(success))
       case _ => viewAndChangeConnector.getITSAStatus(taxableEntityId, taxYear, futureYears, history)
