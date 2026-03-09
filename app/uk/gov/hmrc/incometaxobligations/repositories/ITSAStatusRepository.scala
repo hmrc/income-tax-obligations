@@ -18,7 +18,7 @@ package uk.gov.hmrc.incometaxobligations.repositories
 
 import play.api.libs.json.{JsPath, JsResultException, Reads, Writes}
 import uk.gov.hmrc.incometaxobligations.models.itsaStatus.ITSAStatusResponseModel
-import uk.gov.hmrc.mongo.cache.{CacheIdType, CacheItem, DataKey, MongoCacheRepository}
+import uk.gov.hmrc.mongo.cache.{CacheIdType, DataKey, MongoCacheRepository}
 import uk.gov.hmrc.mongo.{MongoComponent, TimestampSupport}
 import org.mongodb.scala.model.{Filters, FindOneAndUpdateOptions, ReturnDocument, Updates}
 import uk.gov.hmrc.mongo.play.json.Codecs
@@ -39,9 +39,9 @@ class ITSAStatusRepository @Inject() (
       cacheIdType      = CacheIdType.SimpleCacheId
     ) {
 
-  def getCache[A: Reads](dataKey: DataKey[List[ITSAStatusResponseModel]]): Future[Option[A]] = {
+  def getCache[A: Reads](cacheId: String)(dataKey: DataKey[List[ITSAStatusResponseModel]]): Future[Option[A]] = {
     def dataPath: JsPath = dataKey.unwrap.split('.').foldLeft[JsPath](JsPath)(_ \ _)
-    findById("ITSA_Status").map(
+    findById(cacheId).map(
       _.flatMap(cache =>
         dataPath.asSingleJson(cache.data)
           .validateOpt[A]
@@ -50,15 +50,15 @@ class ITSAStatusRepository @Inject() (
     )
   }
 
-  def updateCache[A: Writes](dataKey: DataKey[A], data: A): Future[CacheItem] = {
+  def updateCache[A: Writes](cacheId: String)(dataKey: DataKey[A], data: A) = {
     val timestamp = timestampSupport.timestamp()
     this.collection
       .findOneAndUpdate(
-        filter = Filters.equal("_id", "ITSA_Status"),
+        filter = Filters.equal("_id", cacheId),
         update = Updates.combine(
           Updates.set("data." + dataKey.unwrap, Codecs.toBson(data)),
           Updates.set("modifiedDetails.lastUpdated", timestamp),
-          Updates.setOnInsert("_id", "ITSA_Status"),
+          Updates.setOnInsert("_id", cacheId),
           Updates.setOnInsert("modifiedDetails.createdAt", timestamp)
         ),
         options = FindOneAndUpdateOptions().upsert(true).returnDocument(ReturnDocument.AFTER)
@@ -66,10 +66,10 @@ class ITSAStatusRepository @Inject() (
       .toFuture()
   }
 
-  def deleteCache[A](dataKey: DataKey[A]): Future[Unit] = {
+  def deleteCache[A](cacheId: String)(dataKey: DataKey[A]): Future[Unit] = {
     this.collection
       .findOneAndUpdate(
-        filter = Filters.equal("_id", "ITSA_Status"),
+        filter = Filters.equal("_id", cacheId.toString),
         update = Updates.combine(
           Updates.unset("data." + dataKey.unwrap),
           Updates.set("modifiedDetails.lastUpdated", timestampSupport.timestamp())

@@ -36,28 +36,23 @@ case class ITSAStatusService @Inject()(itsaRepository: ITSAStatusRepository,
                    (implicit headerCarrier: HeaderCarrier, ec: ExecutionContext): Future[Either[ITSAStatusResponse, List[ITSAStatusResponseModel]]] = {
 
     val dataKey = DataKey[List[ITSAStatusResponseModel]]("ITSA_Status")
-    itsaRepository.getCache[List[ITSAStatusResponseModel]](dataKey).flatMap{
-      case Some(value) => Future.successful(value)
+    itsaRepository.getCache[List[ITSAStatusResponseModel]](taxableEntityId)(dataKey).flatMap{
+      case Some(value) => Future.successful(Right(value))
       case _ =>
         itsaConnector.getITSAStatus(taxableEntityId, taxYear, futureYears, history).flatMap{
-          case Right(success)  => itsaRepository.updateCache(dataKey, success)
+          case Right(success)  => itsaRepository.updateCache(taxableEntityId)(dataKey, success)
             Future.successful(Right(success))
-          case _ => val data = viewAndChangeConnector.getITSAStatus(taxableEntityId, taxYear, futureYears, history)
-            itsaRepository.updateCache(dataKey, data)
-
+          case _ => viewAndChangeConnector.getITSAStatus(taxableEntityId, taxYear, futureYears, history)
       }
-    }
-
-    itsaConnector.getITSAStatus(taxableEntityId, taxYear, futureYears, history).flatMap{
-      case Right(success)  => Future.successful(Right(success))
-      case _ => viewAndChangeConnector.getITSAStatus(taxableEntityId, taxYear, futureYears, history)
     }
   }
 
   def requestOptOutForTaxYear(taxableEntityId: String, optOutUpdateRequest: OptOutUpdateRequest)
                              (implicit headerCarrier: HeaderCarrier, ec: ExecutionContext): Future[OptOutUpdateResponse] = {
+    val dataKey = DataKey[List[ITSAStatusResponseModel]]("ITSA_Status")
     itsaConnector.requestOptOutForTaxYear(taxableEntityId, optOutUpdateRequest).flatMap{
-      case success: OptOutUpdateResponseSuccess => Future.successful(success)
+      case success: OptOutUpdateResponseSuccess => itsaRepository.deleteCache(taxableEntityId)(dataKey)
+        Future.successful(success)
       case _ => viewAndChangeConnector.requestOptOutForTaxYear(taxableEntityId, optOutUpdateRequest)
     }
   }
