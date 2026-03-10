@@ -24,7 +24,12 @@ import uk.gov.hmrc.incometaxobligations.models.itsaStatus.{ITSAStatusResponseMod
 import uk.gov.hmrc.incometaxobligations.utils.TestSupport
 import uk.gov.hmrc.mongo.cache.DataKey
 import org.mongodb.scala.gridfs.SingleObservableFuture
+import org.mongodb.scala.gridfs.ObservableFuture
+import play.api.libs.json
+import play.api.libs.json.{JsObject, Json}
 import play.api.test.DefaultAwaitTimeout
+
+import java.time.{LocalDateTime, ZoneOffset}
 
 class ITSAStatusRepositorySpec extends TestSupport with Matchers with BeforeAndAfterEach with DefaultAwaitTimeout {
   val repository = app.injector.instanceOf[ITSAStatusRepository]
@@ -32,26 +37,57 @@ class ITSAStatusRepositorySpec extends TestSupport with Matchers with BeforeAndA
 
   val id = "NX1000000AB"
   val taxYear = "2024"
+  val updatedTaxYear = "2025"
   val statusDetail = new StatusDetail("12/12/2024", "Completed", "Submitted and finished")
   val responseModel = new ITSAStatusResponseModel(taxYear, Some(List(statusDetail)))
-
+  val updatedResponseModel = new ITSAStatusResponseModel(updatedTaxYear, Some(List(statusDetail)))
   override def beforeEach(): Unit = {
     await(repository.collection.deleteMany(BsonDocument()).toFuture())
     super.beforeEach()
   }
 
   "ITSAStatusRepository" should {
-    "add a model to the cache" in {
-      val result = repository.updateCache(id)(dataKey, List(responseModel))
-      await(result) shouldBe responseModel
+    "add a model to the cache if nothing already exists" in {
+      val timeBeforeTest = LocalDateTime.now(ZoneOffset.UTC).toEpochSecond(ZoneOffset.UTC)
+      await(repository.updateCache(id)(dataKey, List(responseModel)))
+      val timeAfterTest = LocalDateTime.now(ZoneOffset.UTC).toEpochSecond(ZoneOffset.UTC)
+      val updatedRecord = await(repository.collection.find[BsonDocument](BsonDocument()).toFuture()).head
+
+      val resultParsedToJson = Json.parse(updatedRecord.toJson).as[JsObject]
+
+      val resultId = (resultParsedToJson \ "_id").as[String]
+      val lastUpdated = (resultParsedToJson \ "modifiedDetails" \ "lastUpdated" \ "$date").as[LocalDateTime].toEpochSecond(ZoneOffset.UTC)
+      resultId shouldBe id
+
+      assert(lastUpdated > timeBeforeTest || lastUpdated == timeBeforeTest)
+      assert(lastUpdated < timeAfterTest || lastUpdated == timeAfterTest)
+
+    }
+    "update a model successfully" in {
+
+      await(repository.collection.countDocuments().head()) shouldBe 0
+      await(repository.updateCache(id)(dataKey, List(responseModel)))
+      
+      await(repository.collection.countDocuments().head()) shouldBe 1
+      await(repository.updateCache(id)(dataKey, List(updatedResponseModel)))
+      
+      val result = repository.getCache[List[ITSAStatusResponseModel]](id)(dataKey)
+      
+      await(result) shouldBe Some(List(updatedResponseModel))
     }
     "find an existing model" in {
       repository.updateCache(id)(dataKey, List(responseModel))
-      val result = repository.getCache(id)(dataKey)
-      await(result) shouldBe responseModel
+      val result = repository.getCache[List[ITSAStatusResponseModel]](id)(dataKey)
+      await(result) shouldBe Some(List(responseModel))
     }
     "delete a model" in {
+      await(repository.collection.countDocuments().head()) shouldBe 0
+      await(repository.updateCache(id)(dataKey, List(responseModel)))
+      await(repository.collection.countDocuments().head()) shouldBe 1
+      await(repository.deleteCache(id)(dataKey))
       
+      val result = repository.get(id)(dataKey)
+      await(result) shouldBe None
     }
   }
 }

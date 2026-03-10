@@ -69,7 +69,7 @@ class ITSAStatusRepository @Inject() (
   def deleteCache[A](cacheId: String)(dataKey: DataKey[A]): Future[Unit] = {
     this.collection
       .findOneAndUpdate(
-        filter = Filters.equal("_id", cacheId.toString),
+        filter = Filters.equal("_id", cacheId),
         update = Updates.combine(
           Updates.unset("data." + dataKey.unwrap),
           Updates.set("modifiedDetails.lastUpdated", timestampSupport.timestamp())

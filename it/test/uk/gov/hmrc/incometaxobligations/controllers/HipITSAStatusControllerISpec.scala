@@ -16,6 +16,8 @@
 
 package uk.gov.hmrc.incometaxobligations.controllers
 
+import org.mongodb.scala.bson.BsonDocument
+import org.scalatest.BeforeAndAfterEach
 import uk.gov.hmrc.incometaxobligations.connectors.hip.ITSAStatusConnector.CorrelationIdHeader
 import uk.gov.hmrc.incometaxobligations.connectors.itsastatus.OptOutUpdateRequestModel.*
 import uk.gov.hmrc.incometaxobligations.constants.ITSAStatusIntegrationTestConstants.*
@@ -25,14 +27,24 @@ import uk.gov.hmrc.incometaxobligations.models.hip.ITSAStatusHipApi
 import uk.gov.hmrc.incometaxobligations.models.itsaStatus.{ITSAStatusResponseError, ITSAStatusResponseModel}
 import play.api.http.Status.{BAD_REQUEST, INTERNAL_SERVER_ERROR, OK, UNAUTHORIZED}
 import play.api.libs.json.Json
+import play.api.test.Helpers.await
 import play.mvc.Http.Status
+import uk.gov.hmrc.incometaxobligations.repositories.ITSAStatusRepository
+import org.mongodb.scala.SingleObservableFuture
+import play.api.test.Helpers.defaultAwaitTimeout
 
-
-class HipITSAStatusControllerISpec extends ComponentSpecBase {
+class HipITSAStatusControllerISpec extends ComponentSpecBase with BeforeAndAfterEach {
   override def config: Map[String, String] =
     super.config + (s"microservice.services.hip.${ITSAStatusHipApi()}.feature-switch" -> "true")
-
-
+    
+  val repository: ITSAStatusRepository = app.injector.instanceOf[ITSAStatusRepository]
+  
+  override def beforeEach(): Unit = {
+    await(repository.collection.deleteMany(BsonDocument()).toFuture())
+    super.beforeEach()
+  }
+  
+  
   "Calling the ITSAStatusController.getITSAStatus method" when {
     "authorised with a valid request" when {
       "a success response is returned from HIP" should {
