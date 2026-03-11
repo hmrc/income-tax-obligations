@@ -186,5 +186,4 @@ class ObligationsControllerISpec extends ComponentSpecBase {
       }
     }
   }
-
 }
