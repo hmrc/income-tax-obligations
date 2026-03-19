@@ -53,7 +53,8 @@ case class ITSAStatusService @Inject()(itsaRepository: ITSAStatusRepository,
     itsaConnector.requestOptOutForTaxYear(taxableEntityId, optOutUpdateRequest).flatMap{
       case success: OptOutUpdateResponseSuccess => itsaRepository.deleteCache(taxableEntityId)(dataKey)
         Future.successful(success)
-      case _ => viewAndChangeConnector.requestOptOutForTaxYear(taxableEntityId, optOutUpdateRequest)
+      case _ => itsaRepository.deleteCache(taxableEntityId)(dataKey)
+        viewAndChangeConnector.requestOptOutForTaxYear(taxableEntityId, optOutUpdateRequest)
     }
   }
 }
