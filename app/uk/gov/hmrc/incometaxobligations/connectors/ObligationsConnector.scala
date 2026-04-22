@@ -38,6 +38,10 @@ class ObligationsConnector @Inject()(val http: HttpClientV2,
     s"${appConfig.desUrl}/enterprise/obligation-data/nino/$nino/ITSA?from=$from&to=$to"
   }
 
+  private[connectors] def getFulfilledObligationsUrl(nino: String): String = {
+    s"${appConfig.desUrl}/enterprise/obligation-data/nino/$nino/ITSA?status=F"
+  }
+
   def headers: Seq[(String, String)] = appConfig.desAuthHeaders
 
   private def callObligationsAPI(url: String)(implicit headerCarrier: HeaderCarrier): Future[ObligationsResponseModel] = {
@@ -83,6 +87,15 @@ class ObligationsConnector @Inject()(val http: HttpClientV2,
     val url = getAllObligationsDateRangeUrl(nino, from, to)
 
     logger.info(s"Calling GET $url \n\nHeaders: $headerCarrier \nAuth Headers: ${appConfig.desAuthHeaders}")
+    callObligationsAPI(url)
+  }
+
+  def getFulfilledObligations(nino: String)
+                             (implicit headerCarrier: HeaderCarrier): Future[ObligationsResponseModel] = {
+    val url = getFulfilledObligationsUrl(nino)
+
+    logger.info(s"URL - $url ")
+    logger.debug(s"Calling GET $url \n\nHeaders: $headerCarrier \nAuth Headers: ${appConfig.desAuthHeaders}")
     callObligationsAPI(url)
   }
 }

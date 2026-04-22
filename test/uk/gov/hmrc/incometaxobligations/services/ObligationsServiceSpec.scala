@@ -94,4 +94,29 @@ class ObligationsServiceSpec extends TestSupport {
     }
   }
 
+  "getFulfilledObligations" when {
+    "The call to DES is successful" should {
+      "return the success model" in new Setup {
+        when(obligationsConnector.getFulfilledObligations(matches(testNino))(any()))
+          .thenReturn(Future.successful(testObligations))
+
+        val result: Future[ObligationsResponseModel] = service.getFulfilledObligations(testNino)()
+
+        await(result) shouldBe testObligations
+      }
+    }
+    "the call to DES is unsuccessful" should {
+      "call the view and change connector and return its response" in new Setup {
+        when(obligationsConnector.getFulfilledObligations(matches(testNino))(any()))
+          .thenReturn(Future.successful(testReportDeadlinesError))
+        when(viewAndChangeConnector.getFulfilledObligations(matches(testNino))(any()))
+          .thenReturn(Future.successful(testObligations))
+
+        val result: Future[ObligationsResponseModel] = service.getFulfilledObligations(testNino)()
+
+        await(result) shouldBe testObligations
+      }
+    }
+  }
+
 }
