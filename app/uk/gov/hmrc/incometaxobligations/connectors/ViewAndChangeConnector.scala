@@ -169,4 +169,47 @@ class ViewAndChangeConnector @Inject()(val http: HttpClientV2,
         }
       }
   }
+  
+  def getFulfilledObligationsUrl(nino: String) = {
+    s"${appConfig.viewAndChangeBaseUrl}/income-tax-view-change/$nino/fulfilled-obligations"
+  }
+
+  def headers: Seq[(String, String)] = appConfig.desAuthHeaders
+  
+  private def callObligationsAPI(url: String)(implicit headerCarrier: HeaderCarrier): Future[ObligationsResponseModel] = {
+    http.get(url"$url")
+      .setHeader(headers: _*)
+      .execute[HttpResponse]
+      .map { response =>
+        response.status match {
+          case OK =>
+            logger.info(s"RESPONSE status: ${response.status}, body: ${response.body}")
+            response.json.validate[ObligationsModel](ObligationsModel.desReadsApi1330).fold(
+              invalid => {
+                logger.error(s"Json validation error: $invalid")
+                ObligationsErrorModel(INTERNAL_SERVER_ERROR, "Json Validation Error. Parsing Report Deadlines Data")
+              },
+              valid => {
+                logger.info("successfully parsed response to ObligationsModel")
+                valid
+              }
+            )
+          case _ =>
+            logger.error(s"RESPONSE status: ${response.status}, body: ${response.body}")
+            ObligationsErrorModel(response.status, response.body)
+        }
+      } recover {
+      case ex =>
+        logger.error(s"Unexpected failed future, ${ex.getMessage}")
+        ObligationsErrorModel(INTERNAL_SERVER_ERROR, s"Unexpected failed future, ${ex.getMessage}")
+    }
+  }
+  
+  def getFulfilledObligations(nino: String)(implicit headerCarrier: HeaderCarrier) = {
+    val url = getFulfilledObligationsUrl(nino)
+
+    logger.info(s"URL - $url ")
+    logger.debug(s"Calling GET $url \n\nHeaders: $headerCarrier \nAuth Headers: ${appConfig.desAuthHeaders}")
+    callObligationsAPI(url)
+  }
 }

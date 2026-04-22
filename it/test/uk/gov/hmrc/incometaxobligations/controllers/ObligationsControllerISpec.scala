@@ -186,4 +186,55 @@ class ObligationsControllerISpec extends ComponentSpecBase {
       }
     }
   }
+  
+  s"Calling GET ${routes.ObligationsController.getFulfilledObligations(testNino)}" when {
+    "the user is authenticated" when {
+      "the request is valid" should {
+        s"return $OK" when {
+          "valid obligations are retrieved" in {
+            isAuthorised(true)
+
+            DesReportDeadlinesStub.stubGetFulfilledObligations(testNino)
+
+            val res = IncomeTaxViewChange.getFulfilledObligations(testNino)
+
+            DesReportDeadlinesStub.verifyGetFulfilledObligations(testNino)
+
+            res should have(
+              httpStatus(OK),
+              jsonBodyAs[ObligationsModel](obligationsModel)
+            )
+          }
+        }
+        s"return the status retrieved from the call to DES when not $OK" in {
+          isAuthorised(true)
+
+          DesReportDeadlinesStub.stubGetFulfilledObligationsError(testNino)(NOT_FOUND, "Error, not found")
+          ViewAndChangeStub.stubGetFulfilledObligationsError(testNino)(NOT_FOUND, "Error, not found")
+
+          val res = IncomeTaxViewChange.getFulfilledObligations(testNino)
+
+          DesReportDeadlinesStub.verifyGetFulfilledObligations(testNino)
+
+          res should have(
+            httpStatus(NOT_FOUND),
+            jsonBodyAs[ObligationsErrorModel](ObligationsErrorModel(NOT_FOUND, "Error, not found"))
+
+          )
+        }
+      }
+    }
+    "the user is not authenticated" should {
+      s"return $UNAUTHORIZED" in {
+        isAuthorised(false)
+
+        val res = IncomeTaxViewChange.getFulfilledObligations(testNino)
+
+        res should have(
+          httpStatus(UNAUTHORIZED),
+          emptyBody
+        )
+      }
+    }
+  }
 }

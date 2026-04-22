@@ -31,6 +31,7 @@ class ObligationsConnectorISpec extends ComponentSpecBase {
   val dateTo = "2021-04-05"
   val getOpenObligationsUrl = s"/enterprise/obligation-data/nino/$testNino/ITSA?status=O"
   val getAllObligationsDateRangeUrl = s"/enterprise/obligation-data/nino/$testNino/ITSA?from=$dateFrom&to=$dateTo"
+  val getFulfilledObligationsUrl = s"/enterprise/obligation-data/nino/$testNino/ITSA?status=F"
 
   "ObligationsConnector" when {
 
@@ -123,6 +124,51 @@ class ObligationsConnectorISpec extends ComponentSpecBase {
 
             result shouldBe ObligationsErrorModel(INTERNAL_SERVER_ERROR, errorJson.toString())
           }
+        }
+      }
+    }
+    ".getFulfilledObligations() is called" when {
+      "the response is a 200 - OK" should {
+
+        "return a valid obligations model when successfully retrieved" in {
+
+          val responseBody = successResponse(testNino).toString()
+          WiremockHelper.stubGet(getFulfilledObligationsUrl, OK, responseBody)
+          val result = connector.getFulfilledObligations(testNino).futureValue
+
+          result shouldBe obligationsModel
+        }
+
+        "return an ObligationsErrorModel when unable to parse the json returned" in {
+
+          val responseBody = testDeadlineFromJson().toString()
+          WiremockHelper.stubGet(getFulfilledObligationsUrl, OK, responseBody)
+          val result = connector.getFulfilledObligations(testNino).futureValue
+
+          result shouldBe ObligationsErrorModel(INTERNAL_SERVER_ERROR, "Json Validation Error. Parsing Report Deadlines Data")
+        }
+      }
+
+      "the response is a 404 - NotFound" should {
+
+        "return an ObligationsErrorModel when there was no data to be retrieved" in {
+
+          val errorJson = Json.obj("code" -> "NO_DATA_FOUND", "reason" -> "The remote endpoint has indicated that no data can be found.")
+          WiremockHelper.stubGet(getFulfilledObligationsUrl, NOT_FOUND, errorJson.toString())
+          val result = connector.getFulfilledObligations(testNino).futureValue
+
+          result shouldBe ObligationsErrorModel(NOT_FOUND, errorJson.toString())
+        }
+      }
+
+      "the response is a 500 - InternalServerError" should {
+
+        "return an ObligationsErrorModel when there has been an unexpected error" in {
+          val errorJson = Json.obj("code" -> "SERVER_ERROR", "reason" -> "An unexpected error has occurred.")
+          WiremockHelper.stubGet(getFulfilledObligationsUrl, INTERNAL_SERVER_ERROR, errorJson.toString())
+          val result = connector.getFulfilledObligations(testNino).futureValue
+
+          result shouldBe ObligationsErrorModel(INTERNAL_SERVER_ERROR, errorJson.toString())
         }
       }
     }
