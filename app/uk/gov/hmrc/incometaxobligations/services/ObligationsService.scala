@@ -45,4 +45,11 @@ class ObligationsService @Inject()(obligationsConnector: ObligationsConnector,
     }
   }
 
+  def getFulfilledObligations(nino: String)(implicit headerCarrier: HeaderCarrier, ec: ExecutionContext) ={
+    obligationsConnector.getFulfilledObligations(nino).flatMap {
+      case success: ObligationsModel => Future.successful(success)
+      case _ => viewAndChangeConnector.getFulfilledObligations(nino)
+    }
+  }
+
 }
