@@ -17,6 +17,7 @@
 package uk.gov.hmrc.incometaxobligations.helpers.servicemocks
 
 import play.api.http.Status
+import play.api.libs.json.Json
 import uk.gov.hmrc.incometaxobligations.constants.ReportDeadlinesIntegrationTestConstants.*
 import uk.gov.hmrc.incometaxobligations.helpers.WiremockHelper
 
@@ -30,6 +31,10 @@ object DesReportDeadlinesStub {
     s"/enterprise/obligation-data/nino/$nino/ITSA?from=$from&to=$to"
   }
 
+  def fulfilledObligationsUrl(nino: String): String = {
+    s"/enterprise/obligation-data/nino/$nino/ITSA?status=F"
+  }
+  
   def stubGetDesOpenReportDeadlines(nino: String): Unit = {
     val desReportDeadlinesResponse = successResponse(nino).toString
     WiremockHelper.stubGet(url(nino), Status.OK, desReportDeadlinesResponse)
@@ -69,6 +74,18 @@ object DesReportDeadlinesStub {
   def stubGetDesAllObligationsError(nino: String, from: String, to: String)(status: Int, body: String): Unit = {
     WiremockHelper.stubGet(allObligationsUrl(nino, from, to), status, body)
   }
+
+  def stubGetFulfilledObligations(nino: String): Unit = {
+    val desReportDeadlinesResponse = successResponse(nino).toString
+    WiremockHelper.stubGet(fulfilledObligationsUrl(nino), Status.OK, desReportDeadlinesResponse)
+  }
+
+  def verifyGetFulfilledObligations(nino: String): Unit = {
+    WiremockHelper.verifyGet(fulfilledObligationsUrl(nino))
+  }
+
+  def stubGetFulfilledObligationsError(nino: String)(status: Int, body: String): Unit =
+    WiremockHelper.stubGet(fulfilledObligationsUrl(nino), status, body)
 
   def verifyGetDesAllObligations(nino: String, from: String, to: String): Unit = {
     WiremockHelper.verifyGet(allObligationsUrl(nino, from, to))

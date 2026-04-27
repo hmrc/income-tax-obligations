@@ -33,6 +33,10 @@ object ViewAndChangeStub {
   def allObligationsUrl(nino: String, from: String, to: String): String = {
     s"/income-tax-view-change/$nino/obligations/from/$from/to/$to"
   }
+  
+  def getFulfilledObligationsUrl(nino: String): String = {
+    s"/income-tax-view-change/$nino/fulfilled-obligations"
+  }
 
   def getITSAStatusUrl(taxableEntityId: String, taxYear: String): String = {
     s"/income-tax-view-change/itsa-status/status/$taxableEntityId/$taxYear?futureYears=true&history=true"
@@ -49,6 +53,10 @@ object ViewAndChangeStub {
 
   def stubGetAllObligationsError(nino: String, from: String, to: String)(status: Int, body: String): Unit = {
     WiremockHelper.stubGet(allObligationsUrl(nino, from, to), status, Json.toJson(ObligationsErrorModel(status, body)).toString)
+  }
+
+  def stubGetFulfilledObligationsError(nino: String)(status: Int, body: String): Unit = {
+    WiremockHelper.stubGet(getFulfilledObligationsUrl(nino), status, body)
   }
 
   def stubGetHipITSAStatusDetailsBadRequest(): Unit = {
