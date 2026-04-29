@@ -66,5 +66,7 @@ class AppConfig @Inject()(servicesConfig: ServicesConfig) {
   }
 
   val confidenceLevel: Int = servicesConfig.getInt("auth.confidenceLevel")
+  
+  val ttlMinutes: Int = servicesConfig.getInt("mongodb.ttlMinutes")
 
 }
