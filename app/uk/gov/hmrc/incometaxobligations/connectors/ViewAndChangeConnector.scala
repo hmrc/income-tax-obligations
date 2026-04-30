@@ -16,16 +16,16 @@
 
 package uk.gov.hmrc.incometaxobligations.connectors
 
-import uk.gov.hmrc.incometaxobligations.models.itsaStatus.{ITSAStatusResponse, ITSAStatusResponseError, ITSAStatusResponseModel}
 import play.api.Logging
 import play.api.http.Status.*
-import play.api.libs.json.{JsResult, Json}
+import play.api.libs.json.Json
 import play.api.libs.ws.writeableOf_JsValue
 import uk.gov.hmrc.http.client.HttpClientV2
 import uk.gov.hmrc.http.{HeaderCarrier, HttpResponse, StringContextOps}
 import uk.gov.hmrc.incometaxobligations.config.AppConfig
 import uk.gov.hmrc.incometaxobligations.connectors.hip.ITSAStatusConnector.CorrelationIdHeader
 import uk.gov.hmrc.incometaxobligations.connectors.itsastatus.OptOutUpdateRequestModel.*
+import uk.gov.hmrc.incometaxobligations.models.itsaStatus.{ITSAStatusResponse, ITSAStatusResponseError, ITSAStatusResponseModel}
 import uk.gov.hmrc.incometaxobligations.models.obligations.{ObligationsErrorModel, ObligationsModel, ObligationsResponseModel}
 
 import javax.inject.{Inject, Singleton}
@@ -102,22 +102,6 @@ class ViewAndChangeConnector @Inject()(val http: HttpClientV2,
 
   def updateItsaStatusUrl(taxableEntityId: String): String =
     s"${appConfig.viewAndChangeBaseUrl}/income-tax-view-change/itsa-status/update/$taxableEntityId"
-  
-
-  def handleValidation[T](validationResult: JsResult[T], correlationId: String, status: Int)
-                                 (extractErrorItems: T => List[ErrorItem]): OptOutUpdateResponseFailure = {
-    validationResult.fold(
-      invalid => {
-        val msg = s"Json validation error parsing itsa-status update response, error $invalid"
-        logger.error(msg)
-        OptOutUpdateResponseFailure.defaultFailure(msg, correlationId)
-      },
-      valid => {
-        logger.debug(s"Unsuccessful response: $valid")
-        OptOutUpdateResponseFailure(correlationId, status, extractErrorItems(valid))
-      }
-    )
-  }
 
   def getITSAStatus(taxableEntityId: String, taxYear: String, futureYears: Boolean, history: Boolean)
                    (implicit headerCarrier: HeaderCarrier): Future[Either[ITSAStatusResponse, List[ITSAStatusResponseModel]]] = {

@@ -47,7 +47,6 @@ object ViewAndChangeStub {
   val updateUrl: String = updateItsStatusUrl(taxableEntityId)
 
   def stubGetAllObligations(nino: String, from: String, to: String, statusCode: String, responseBody: String): Unit = {
-    val desReportDeadlinesResponse: String = successResponseWithStatus(nino, statusCode).toString
     WiremockHelper.stubGet(allObligationsUrl(nino, from, to), OK, responseBody)
   }
 

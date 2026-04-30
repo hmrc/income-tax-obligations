@@ -131,7 +131,6 @@ class ViewAndChangeConnectorISpec extends ComponentSpecBase {
   ".requestOptOutForTaxYear() is called" when {
     "return an OptOutUpdateResponseSuccess if the response is a 204 - NO_CONTENT" in {
       val response = OptOutUpdateResponseSuccess(taxableEntityId)
-      val optOutUpdateRequest = OptOutUpdateRequest(taxYear, optOutUpdateReason)
       WiremockHelper.stubPutWithHeaders(updateUrl,  NO_CONTENT, Json.toJson(response).toString, Map("correlationId" -> taxableEntityId))
       val result = connector.requestOptOutForTaxYear(taxableEntityId, request).futureValue
       result shouldBe response

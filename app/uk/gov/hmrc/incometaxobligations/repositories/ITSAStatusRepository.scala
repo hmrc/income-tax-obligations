@@ -17,10 +17,11 @@
 package uk.gov.hmrc.incometaxobligations.repositories
 
 import play.api.libs.json.{JsPath, JsResultException, Reads, Writes}
-import uk.gov.hmrc.incometaxobligations.models.itsaStatus.ITSAStatusResponseModel
 import uk.gov.hmrc.mongo.cache.{CacheIdType, DataKey, MongoCacheRepository}
 import uk.gov.hmrc.mongo.{MongoComponent, TimestampSupport}
 import org.mongodb.scala.model.{Filters, FindOneAndUpdateOptions, ReturnDocument, Updates}
+import uk.gov.hmrc.incometaxobligations.config.AppConfig
+import uk.gov.hmrc.incometaxobligations.models.itsaStatus.ITSAStatusResponseModel
 import uk.gov.hmrc.mongo.play.json.Codecs
 
 import javax.inject.Inject
@@ -29,12 +30,13 @@ import scala.concurrent.duration.{Duration, FiniteDuration, MINUTES}
 
 class ITSAStatusRepository @Inject() (
     mongoComponent: MongoComponent,
-    timestampSupport: TimestampSupport
+    timestampSupport: TimestampSupport,
+    appConfig: AppConfig
     )(implicit ec: ExecutionContext
     ) extends MongoCacheRepository(
       mongoComponent   = mongoComponent,
       collectionName   = "itsaStatusRepository",
-      ttl              = Duration.apply(5, MINUTES),
+      ttl              = Duration.apply(appConfig.ttlMinutes, MINUTES),
       timestampSupport = timestampSupport,
       cacheIdType      = CacheIdType.SimpleCacheId
     ) {
