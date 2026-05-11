@@ -43,7 +43,7 @@ class ViewAndChangeConnector @Inject()(val http: HttpClientV2,
       .map { response =>
         response.status match {
           case OK =>
-            logger.info(s"RESPONSE status: ${response.status}, body: ${response.body}")
+            logger.info(s"RESPONSE status: ${response.status}") // TODO - MIPR-2637: Inform V&C team about no longer logging the response body
             response.json.validate[ObligationsModel](ObligationsModel.format).fold(
               invalid => {
                 logger.error(s"Json validation error: $invalid")
@@ -75,7 +75,7 @@ class ViewAndChangeConnector @Inject()(val http: HttpClientV2,
       .map { response =>
         response.status match {
           case OK =>
-            logger.info(s"RESPONSE status: ${response.status}, body: ${response.body}")
+            logger.info(s"RESPONSE status: ${response.status}") // TODO - MIPR-2637: Inform V&C team about no longer logging the response body
             response.json.validate[ObligationsModel](ObligationsModel.format).fold(
               invalid => {
                 logger.error(s"Json validation error: $invalid")
@@ -112,7 +112,7 @@ class ViewAndChangeConnector @Inject()(val http: HttpClientV2,
       .map { response =>
         response.status match {
           case OK =>
-            logger.debug(s"RESPONSE status:${response.status}, body:${response.body}")
+            logger.debug(s"RESPONSE status:${response.status}") // TODO - MIPR-2637: Inform V&C team about no longer logging the response body
             response.json.validate[List[ITSAStatusResponseModel]].fold(
               invalid => {
                 logger.error(s"Validation Errors: $invalid")
@@ -167,7 +167,7 @@ class ViewAndChangeConnector @Inject()(val http: HttpClientV2,
       .map { response =>
         response.status match {
           case OK =>
-            logger.info(s"RESPONSE status: ${response.status}, body: ${response.body}")
+            logger.info(s"RESPONSE status: ${response.status}") // TODO - MIPR-2637: Inform V&C team about no longer logging the response body
             response.json.validate[ObligationsModel](ObligationsModel.desReadsApi1330).fold(
               invalid => {
                 logger.error(s"Json validation error: $invalid")
