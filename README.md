@@ -7,7 +7,7 @@ This is the protected backend for the Quarterly Reporting Service (MTD ITSA). Sp
 To run all income-view-and-change services via **service-manager-2**:
 
 ```
-sm2 --start ITVC_BACKEND_ALL -r
+sm2 --start ITVC_TEST --appendArgs '{"CITIZEN_DETAILS":["-Dmongodb.cid-sautr-cache.enabled=false"]}'
 ```
 
 ### To run the application locally execute the following:
