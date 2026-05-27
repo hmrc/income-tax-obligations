@@ -119,7 +119,7 @@ class ITSAStatusServiceSpec extends TestSupport with BeforeAndAfterEach{
             }
           }
 
-          "return a list of status details from view and change without updating the cache" when {
+          "return a list of status details from view and change and update the cache" when {
             "no cache exists and HIP call fails with an error other than NOT_FOUND" in {
               when(itsaStatusConnector.getITSAStatus(any(), any(), any(), any())(any()))
                 .thenReturn(Future.successful(Left(ITSAStatusResponseError(INTERNAL_SERVER_ERROR, "internal error"))))
@@ -131,7 +131,7 @@ class ITSAStatusServiceSpec extends TestSupport with BeforeAndAfterEach{
               await(result) shouldBe Right(List(responseModel))
 
               val cacheData = await(repository.getCache[List[ITSAStatusResponseModel]](id)(dataKey))
-              cacheData shouldBe None
+              cacheData shouldBe Some(List(responseModel))
             }
           }
         }

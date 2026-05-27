@@ -80,7 +80,7 @@ class ITSAStatusConnector @Inject()(val http: HttpClientV2,
             logger.warn(s" RESPONSE status: ${response.status}, body: ${response.body}")
             Left(ITSAStatusResponseNotFound(response.status, response.body))
           case _ =>
-            logger.error(s"RESPONSE status: ${response.status}, body: ${response.body}, hc: ${headerCarrier}")
+            logger.error(s"RESPONSE status: ${response.status}, body: ${response.body}")
             Left(ITSAStatusResponseError(response.status, response.body))
         }
       } recover {

@@ -57,17 +57,30 @@ case class ITSAStatusService @Inject()(itsaRepository: ITSAStatusRepository,
     itsaRepository.getCache[List[ITSAStatusResponseModel]](taxableEntityId)(dataKey).flatMap{
       case Some(itsaStatus) if itsaStatus.isEmpty => Future.successful(Left(ITSAStatusResponseNotFound(404, "No ITSA Status found")))
       case Some(itsaStatus) => Future.successful(Right(itsaStatus))
-      case optItsaStatus =>
-        itsaConnector.getITSAStatus(taxableEntityId, taxYear, futureYears, history).flatMap{
-          case Right(success) =>
-            itsaRepository.updateCache(taxableEntityId)(dataKey, success)
-              .map(_ => Right(success))
-          case Left(error: ITSAStatusResponseNotFound) =>
-            itsaRepository.updateCache(taxableEntityId)(dataKey, List())
-              .map(_ => Left(error))
-          case _ => viewAndChangeConnector.getITSAStatus(taxableEntityId, taxYear, futureYears, history)
-      }
+      case optItsaStatus => getOptItsaStatusAndUpdateCache(taxableEntityId, taxYear, futureYears, history, dataKey)
     }
+  }
+
+  def getOptItsaStatusAndUpdateCache(taxableEntityId: String,
+                                     taxYear: String,
+                                     futureYears: Boolean,
+                                     history: Boolean,
+                                     dataKey: DataKey[List[ITSAStatusResponseModel]])
+                            (implicit headerCarrier: HeaderCarrier, ec: ExecutionContext): Future[Either[ITSAStatusResponse, List[ITSAStatusResponseModel]]] = {
+    val optItsaStatus = itsaConnector.getITSAStatus(taxableEntityId, taxYear, futureYears, history).flatMap {
+      case Right(success) => Future.successful(Right(success))
+      case Left(error: ITSAStatusResponseNotFound) => Future.successful(Left(error))
+      case _ => viewAndChangeConnector.getITSAStatus(taxableEntityId, taxYear, futureYears, history)
+    }
+     optItsaStatus.flatMap {
+       case Right(success: List[ITSAStatusResponseModel]) =>
+         itsaRepository.updateCache(taxableEntityId)(dataKey, success)
+           .map(_ => Right(success))
+       case Left(error: ITSAStatusResponseNotFound) =>
+         itsaRepository.updateCache(taxableEntityId)(dataKey, List())
+           .map(_ => Left(error))
+        case Left(error) => Future.successful(Left(error))
+     }
   }
 
   def requestOptOutForTaxYear(taxableEntityId: String, optOutUpdateRequest: OptOutUpdateRequest)
