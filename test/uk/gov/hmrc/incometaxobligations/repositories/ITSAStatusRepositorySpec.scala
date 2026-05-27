@@ -84,7 +84,7 @@ class ITSAStatusRepositorySpec extends TestSupport with Matchers with BeforeAndA
       await(repository.collection.countDocuments().head()) shouldBe 0
       await(repository.updateCache(id)(dataKey, List(responseModel)))
       await(repository.collection.countDocuments().head()) shouldBe 1
-      await(repository.deleteCache(id)(dataKey))
+      await(repository.deleteCache(id))
       
       val result = repository.get(id)(dataKey)
       await(result) shouldBe None
