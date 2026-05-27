@@ -77,8 +77,7 @@ class ObligationsConnector @Inject()(val http: HttpClientV2,
                         (implicit headerCarrier: HeaderCarrier): Future[ObligationsResponseModel] = {
     val url = getOpenObligationsUrl(nino)
 
-    logger.info(s"URL - $url ")
-    logger.debug(s"Calling GET $url \n\nHeaders: $headerCarrier \nAuth Headers: ${appConfig.desAuthHeaders}")
+    logger.debug(s"Calling GET $url")
     callObligationsAPI(url)
   }
 
@@ -86,16 +85,14 @@ class ObligationsConnector @Inject()(val http: HttpClientV2,
                                       (implicit headerCarrier: HeaderCarrier): Future[ObligationsResponseModel] = {
     val url = getAllObligationsDateRangeUrl(nino, from, to)
 
-    logger.info(s"Calling GET $url \n\nHeaders: $headerCarrier \nAuth Headers: ${appConfig.desAuthHeaders}")
+    logger.debug(s"Calling GET $url")
     callObligationsAPI(url)
   }
 
   def getFulfilledObligations(nino: String)
                              (implicit headerCarrier: HeaderCarrier): Future[ObligationsResponseModel] = {
     val url = getFulfilledObligationsUrl(nino)
-
-    logger.info(s"URL - $url ")
-    logger.debug(s"Calling GET $url \n\nHeaders: $headerCarrier \nAuth Headers: ${appConfig.desAuthHeaders}")
+    logger.debug(s"Calling GET $url")
     callObligationsAPI(url)
   }
 }
