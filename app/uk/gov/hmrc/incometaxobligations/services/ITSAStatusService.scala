@@ -72,18 +72,11 @@ case class ITSAStatusService @Inject()(itsaRepository: ITSAStatusRepository,
 
   def requestOptOutForTaxYear(taxableEntityId: String, optOutUpdateRequest: OptOutUpdateRequest)
                              (implicit headerCarrier: HeaderCarrier, ec: ExecutionContext): Future[OptOutUpdateResponse] = {
-    val taxYear = optOutUpdateRequest.taxYear
-    deleteCache(taxableEntityId, taxYear).flatMap { _ =>
+    itsaRepository.deleteCache(taxableEntityId).flatMap { _ =>
       itsaConnector.requestOptOutForTaxYear(taxableEntityId, optOutUpdateRequest).flatMap {
         case success: OptOutUpdateResponseSuccess => Future.successful(success)
         case _ => viewAndChangeConnector.requestOptOutForTaxYear(taxableEntityId, optOutUpdateRequest)
       }
     }
-  }
-
-  def deleteCache(taxableEntityId: String, taxYear: String)(implicit headerCarrier: HeaderCarrier, ec: ExecutionContext): Future[List[Unit]] = {
-    Future.sequence(allITSAStatusKeyNames(taxYear).map { keyName =>
-      itsaRepository.deleteCache(taxableEntityId)(DataKey[List[ITSAStatusResponseModel]](keyName))
-  })
   }
 }

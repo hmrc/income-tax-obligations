@@ -1,1 +1,1 @@
-sbt 'run 9076'
+sbt "run 9076 -Dplay.http.router=testOnlyDoNotUseInAppConf.Routes"
