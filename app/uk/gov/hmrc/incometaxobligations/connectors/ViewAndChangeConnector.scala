@@ -158,11 +158,8 @@ class ViewAndChangeConnector @Inject()(val http: HttpClientV2,
     s"${appConfig.viewAndChangeBaseUrl}/income-tax-view-change/$nino/fulfilled-obligations"
   }
 
-  def headers: Seq[(String, String)] = appConfig.desAuthHeaders
-  
   private def callObligationsAPI(url: String)(implicit headerCarrier: HeaderCarrier): Future[ObligationsResponseModel] = {
     http.get(url"$url")
-      .setHeader(headers: _*)
       .execute[HttpResponse]
       .map { response =>
         response.status match {
