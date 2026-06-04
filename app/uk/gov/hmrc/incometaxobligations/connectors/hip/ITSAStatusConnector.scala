@@ -32,9 +32,6 @@ import uk.gov.hmrc.incometaxobligations.connectors.itsastatus.OptOutUpdateReques
 import javax.inject.Inject
 import scala.concurrent.{ExecutionContext, Future}
 
-object ITSAStatusConnector {
-  val CorrelationIdHeader = "CorrelationId"
-}
 
 class ITSAStatusConnector @Inject()(val http: HttpClientV2,
                                     val appConfig: AppConfig
@@ -63,18 +60,16 @@ class ITSAStatusConnector @Inject()(val http: HttpClientV2,
       )
       .execute[HttpResponse]
       .map { response =>
-        response.status match {
+        response.status match
           case OK =>
             logger.debug(s"RESPONSE status:${response.status}") // TODO - MIPR-2637: Inform V&C team about no longer logging the response body
             response.json.validate[List[ITSAStatusResponseModel]].fold(
-              invalid => {
+              invalid =>
                 logger.error(s"Validation Errors: $invalid")
-                Left(ITSAStatusResponseError(INTERNAL_SERVER_ERROR, "Json Validation Error. Parsing ITSA Status Response"))
-              },
-              valid => {
+                Left(ITSAStatusResponseError(INTERNAL_SERVER_ERROR, "Json Validation Error. Parsing ITSA Status Response")),
+              valid =>
                 logger.info("successfully parsed response to getITSAStatus")
                 Right(valid)
-              }
             )
           case NOT_FOUND =>
             logger.warn(s" RESPONSE status: ${response.status}, body: ${response.body}")
@@ -82,7 +77,6 @@ class ITSAStatusConnector @Inject()(val http: HttpClientV2,
           case _ =>
             logger.error(s"RESPONSE status: ${response.status}, body: ${response.body}")
             Left(ITSAStatusResponseError(response.status, response.body))
-        }
       } recover {
       case ex =>
         logger.error(s"Unexpected failed future, ${ex.getMessage}")
@@ -140,4 +134,8 @@ class ITSAStatusConnector @Inject()(val http: HttpClientV2,
       }
     )
   }
+}
+
+object ITSAStatusConnector {
+  val CorrelationIdHeader = "CorrelationId"
 }

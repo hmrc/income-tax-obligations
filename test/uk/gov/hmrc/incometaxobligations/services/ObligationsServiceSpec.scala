@@ -19,7 +19,7 @@ package uk.gov.hmrc.incometaxobligations.services
 import org.mockito.ArgumentMatchers.{any, eq as matches}
 import org.mockito.Mockito.{mock, when}
 import play.api.test.Helpers.*
-import uk.gov.hmrc.incometaxobligations.connectors.{ObligationsConnector, ViewAndChangeConnector}
+import uk.gov.hmrc.incometaxobligations.connectors.ObligationsConnector
 import uk.gov.hmrc.incometaxobligations.constants.BaseTestConstants.*
 import uk.gov.hmrc.incometaxobligations.constants.ObligationsTestConstants.*
 import uk.gov.hmrc.incometaxobligations.models.obligations.ObligationsResponseModel
@@ -32,31 +32,14 @@ class ObligationsServiceSpec extends TestSupport {
 
   trait Setup {
     val obligationsConnector: ObligationsConnector = mock(classOf[ObligationsConnector])
-    val viewAndChangeConnector: ViewAndChangeConnector = mock(classOf[ViewAndChangeConnector])
 
-    val service = new ObligationsService(
-      obligationsConnector,
-      viewAndChangeConnector
-    )
+    val service = ObligationsService(obligationsConnector)
   }
 
   "getOpenObligations" when {
     s"the call to DES is successful" should {
       s"return the success model" in new Setup {
         when(obligationsConnector.getOpenObligations(matches(testNino))(any()))
-          .thenReturn(Future.successful(testObligations))
-
-        val result: Future[ObligationsResponseModel] = service.getOpenObligations(testNino)(hc, ec)
-
-        await(result) shouldBe testObligations
-      }
-    }
-
-    "the call to DES is unsuccessful" should {
-      "call the view and change connector and return its response" in new Setup {
-        when(obligationsConnector.getOpenObligations(matches(testNino))(any()))
-          .thenReturn(Future.successful(testReportDeadlinesError))
-        when(viewAndChangeConnector.getOpenObligations(matches(testNino))(any()))
           .thenReturn(Future.successful(testObligations))
 
         val result: Future[ObligationsResponseModel] = service.getOpenObligations(testNino)(hc, ec)
@@ -79,37 +62,12 @@ class ObligationsServiceSpec extends TestSupport {
         await(result) shouldBe testObligations
       }
     }
-
-    "the call to DES is unsuccessful" should {
-      "call the view and change connector and return its response" in new Setup {
-        when(obligationsConnector.getAllObligationsWithinDateRange(matches(testNino), matches(dateFrom), matches(dateTo))(any()))
-          .thenReturn(Future.successful(testReportDeadlinesError))
-        when(viewAndChangeConnector.getAllObligationsWithinDateRange(matches(testNino), matches(dateFrom), matches(dateTo))(any()))
-          .thenReturn(Future.successful(testObligations))
-
-        val result: Future[ObligationsResponseModel] = service.getAllObligationsWithinDateRange(testNino, dateFrom, dateTo)(hc, ec)
-
-        await(result) shouldBe testObligations
-      }
-    }
   }
 
   "getFulfilledObligations" when {
     "The call to DES is successful" should {
       "return the success model" in new Setup {
         when(obligationsConnector.getFulfilledObligations(matches(testNino))(any()))
-          .thenReturn(Future.successful(testObligations))
-
-        val result: Future[ObligationsResponseModel] = service.getFulfilledObligations(testNino)()
-
-        await(result) shouldBe testObligations
-      }
-    }
-    "the call to DES is unsuccessful" should {
-      "call the view and change connector and return its response" in new Setup {
-        when(obligationsConnector.getFulfilledObligations(matches(testNino))(any()))
-          .thenReturn(Future.successful(testReportDeadlinesError))
-        when(viewAndChangeConnector.getFulfilledObligations(matches(testNino))(any()))
           .thenReturn(Future.successful(testObligations))
 
         val result: Future[ObligationsResponseModel] = service.getFulfilledObligations(testNino)()

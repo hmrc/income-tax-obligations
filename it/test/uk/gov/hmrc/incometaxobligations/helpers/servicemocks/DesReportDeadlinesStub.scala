@@ -17,7 +17,6 @@
 package uk.gov.hmrc.incometaxobligations.helpers.servicemocks
 
 import play.api.http.Status
-import play.api.libs.json.Json
 import uk.gov.hmrc.incometaxobligations.constants.ReportDeadlinesIntegrationTestConstants.*
 import uk.gov.hmrc.incometaxobligations.helpers.WiremockHelper
 

@@ -22,7 +22,7 @@ import uk.gov.hmrc.incometaxobligations.connectors.hip.ITSAStatusConnector.Corre
 import uk.gov.hmrc.incometaxobligations.connectors.itsastatus.OptOutUpdateRequestModel.*
 import uk.gov.hmrc.incometaxobligations.constants.ITSAStatusIntegrationTestConstants.*
 import uk.gov.hmrc.incometaxobligations.helpers.ComponentSpecBase
-import uk.gov.hmrc.incometaxobligations.helpers.servicemocks.{HipITSAStatusStub, ViewAndChangeStub}
+import uk.gov.hmrc.incometaxobligations.helpers.servicemocks.HipITSAStatusStub
 import uk.gov.hmrc.incometaxobligations.models.hip.ITSAStatusHipApi
 import uk.gov.hmrc.incometaxobligations.models.itsaStatus.{ITSAStatusResponseError, ITSAStatusResponseModel}
 import play.api.http.Status.{BAD_REQUEST, INTERNAL_SERVER_ERROR, OK, UNAUTHORIZED}
@@ -68,28 +68,6 @@ class HipITSAStatusControllerISpec extends ComponentSpecBase with BeforeAndAfter
           )
         }
       }
-      "the call to HIP fails but ViewAndChange returns a success response" should {
-        "return a List of status details" in {
-
-          isAuthorised(true)
-
-          And("I wiremock stub a successful ITSAStatusDetails response")
-          HipITSAStatusStub.stubGetHipITSAStatusDetailsBadRequest()
-          ViewAndChangeStub.stubGetHipITSAStatusDetails(successITSAStatusListHIPResponseJson("00", "00").toString())
-
-          When(s"I call GET /itsa-status/status/$taxableEntityId/$taxYear")
-          val res = IncomeTaxViewChange.getITSAStatus(taxableEntityId, taxYear)
-
-          HipITSAStatusStub.verifyGetHipITSAStatusDetails()
-
-          Then("a successful response is returned with status details")
-
-          res should have(
-            httpStatus(OK),
-            jsonBodyAs[List[ITSAStatusResponseModel]](List(successITSAStatusResponseModel))
-          )
-        }
-      }
 
 
       "authorised with a invalid request" should {
@@ -98,7 +76,6 @@ class HipITSAStatusControllerISpec extends ComponentSpecBase with BeforeAndAfter
 
           And("I wiremock stub a badRequest ITSAStatusDetails response")
           HipITSAStatusStub.stubGetHipITSAStatusDetailsBadRequest()
-          ViewAndChangeStub.stubGetHipITSAStatusDetailsBadRequest()
 
           When(s"I call GET /itsa-status/status/$taxableEntityId/$taxYear")
           val res = IncomeTaxViewChange.getITSAStatus(taxableEntityId, taxYear)
@@ -116,13 +93,11 @@ class HipITSAStatusControllerISpec extends ComponentSpecBase with BeforeAndAfter
 
           And("I wiremock stub an error response")
           HipITSAStatusStub.stubGetHipITSAStatusDetailsError()
-          ViewAndChangeStub.stubGetHipITSAStatusDetailsError()
 
           When(s"I call GET /itsa-status/status/$taxableEntityId/$taxYear")
           val res = IncomeTaxViewChange.getITSAStatus(taxableEntityId, taxYear)
 
           HipITSAStatusStub.verifyGetHipITSAStatusDetails()
-          ViewAndChangeStub.verifyGetHipITSAStatusDetails()
 
           Then("an error response is returned")
 
@@ -186,7 +161,6 @@ class HipITSAStatusControllerISpec extends ComponentSpecBase with BeforeAndAfter
           val expectedResponse = Json.toJson(OptOutUpdateResponseFailure(correlationId, Status.INTERNAL_SERVER_ERROR, List(ErrorItem("INTERNAL_SERVER_ERROR", "Unexpected response status: 404")))).toString
           val headers = Map(CorrelationIdHeader -> "123")
           HipITSAStatusStub.stubPutHipITSAStatusUpdate(Status.NOT_FOUND, expectedResponse, headers)
-          ViewAndChangeStub.stubPutHipITSAStatusUpdate(Status.INTERNAL_SERVER_ERROR, expectedResponse, headers)
 
           val request = OptOutUpdateRequest(optOutTaxYear, optOutUpdateReason)
           val result = IncomeTaxViewChange.updateItsaStatus(taxableEntityId, Json.toJson(request))
