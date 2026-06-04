@@ -42,13 +42,6 @@ case class ITSAStatusService @Inject()(itsaRepository: ITSAStatusRepository,
     DataKey[List[ITSAStatusResponseModel]](keyName)
   }
 
-  lazy val allITSAStatusKeyNames: String => List[String] = taxyear => List(
-    s"ITSA_Status_${taxyear}_FutureAndHistory",
-    s"ITSA_Status_${taxyear}_Future",
-    s"ITSA_Status_${taxyear}_History",
-    s"ITSA_Status_$taxyear"
-  )
-
   def getITSAStatus(taxableEntityId: String, taxYear: String, futureYears: Boolean, history: Boolean)
                    (implicit headerCarrier: HeaderCarrier, ec: ExecutionContext): Future[Either[ITSAStatusResponse, List[ITSAStatusResponseModel]]] = {
 
