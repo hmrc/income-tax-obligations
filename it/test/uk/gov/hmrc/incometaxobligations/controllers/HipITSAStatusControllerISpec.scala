@@ -56,7 +56,7 @@ class HipITSAStatusControllerISpec extends ComponentSpecBase with BeforeAndAfter
           HipITSAStatusStub.stubGetHipITSAStatusDetails(successITSAStatusListHIPResponseJson("00", "00").toString())
 
           When(s"I call GET /itsa-status/status/$taxableEntityId/$taxYear")
-          val res = IncomeTaxViewChange.getITSAStatus(taxableEntityId, taxYear)
+          val res = Obligations.getITSAStatus(taxableEntityId, taxYear)
 
           HipITSAStatusStub.verifyGetHipITSAStatusDetails()
 
@@ -78,7 +78,7 @@ class HipITSAStatusControllerISpec extends ComponentSpecBase with BeforeAndAfter
           HipITSAStatusStub.stubGetHipITSAStatusDetailsBadRequest()
 
           When(s"I call GET /itsa-status/status/$taxableEntityId/$taxYear")
-          val res = IncomeTaxViewChange.getITSAStatus(taxableEntityId, taxYear)
+          val res = Obligations.getITSAStatus(taxableEntityId, taxYear)
 
           Then(s"a status of ${BAD_REQUEST} is returned ")
 
@@ -95,7 +95,7 @@ class HipITSAStatusControllerISpec extends ComponentSpecBase with BeforeAndAfter
           HipITSAStatusStub.stubGetHipITSAStatusDetailsError()
 
           When(s"I call GET /itsa-status/status/$taxableEntityId/$taxYear")
-          val res = IncomeTaxViewChange.getITSAStatus(taxableEntityId, taxYear)
+          val res = Obligations.getITSAStatus(taxableEntityId, taxYear)
 
           HipITSAStatusStub.verifyGetHipITSAStatusDetails()
 
@@ -114,7 +114,7 @@ class HipITSAStatusControllerISpec extends ComponentSpecBase with BeforeAndAfter
           isAuthorised(false)
 
           When(s"I call GET /itsa-status/status/$taxableEntityId/$taxYear")
-          val res = IncomeTaxViewChange.getITSAStatus(taxableEntityId, taxYear)
+          val res = Obligations.getITSAStatus(taxableEntityId, taxYear)
 
           res should have(
             httpStatus(UNAUTHORIZED),
@@ -141,7 +141,7 @@ class HipITSAStatusControllerISpec extends ComponentSpecBase with BeforeAndAfter
           HipITSAStatusStub.stubPutHipITSAStatusUpdate(Status.NO_CONTENT, expectedBody, headers)
 
           val request = OptOutUpdateRequest(optOutTaxYear, optOutUpdateReason)
-          val result = IncomeTaxViewChange.updateItsaStatus(taxableEntityId, Json.toJson(request))
+          val result = Obligations.updateItsaStatus(taxableEntityId, Json.toJson(request))
 
           result should have(
             httpStatus(Status.NO_CONTENT),
@@ -163,7 +163,7 @@ class HipITSAStatusControllerISpec extends ComponentSpecBase with BeforeAndAfter
           HipITSAStatusStub.stubPutHipITSAStatusUpdate(Status.NOT_FOUND, expectedResponse, headers)
 
           val request = OptOutUpdateRequest(optOutTaxYear, optOutUpdateReason)
-          val result = IncomeTaxViewChange.updateItsaStatus(taxableEntityId, Json.toJson(request))
+          val result = Obligations.updateItsaStatus(taxableEntityId, Json.toJson(request))
 
           result should have(
             httpStatus(Status.INTERNAL_SERVER_ERROR),
@@ -183,7 +183,7 @@ class HipITSAStatusControllerISpec extends ComponentSpecBase with BeforeAndAfter
           HipITSAStatusStub.stubPutHipITSAStatusUpdate(Status.INTERNAL_SERVER_ERROR, Json.toJson("bad-format-fail-response").toString(), headers)
 
           val request = OptOutUpdateRequest(optOutTaxYear, optOutUpdateReason)
-          val result = IncomeTaxViewChange.updateItsaStatus(taxableEntityId, Json.toJson(request))
+          val result = Obligations.updateItsaStatus(taxableEntityId, Json.toJson(request))
 
           result should have(
             httpStatus(Status.INTERNAL_SERVER_ERROR)
