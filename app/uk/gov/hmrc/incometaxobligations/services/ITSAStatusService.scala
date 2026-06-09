@@ -19,7 +19,7 @@ package uk.gov.hmrc.incometaxobligations.services
 import play.api.Logging
 import uk.gov.hmrc.http.HeaderCarrier
 import uk.gov.hmrc.incometaxobligations.connectors.hip.ITSAStatusConnector
-import uk.gov.hmrc.incometaxobligations.connectors.itsastatus.OptOutUpdateRequestModel.{OptOutUpdateRequest, OptOutUpdateResponse}
+import uk.gov.hmrc.incometaxobligations.models.OptOutUpdateRequestModel.{OptOutUpdateRequest, OptOutUpdateResponse}
 import uk.gov.hmrc.incometaxobligations.connectors.RawResponseReads
 import uk.gov.hmrc.incometaxobligations.models.itsaStatus.{ITSAStatusResponse, ITSAStatusResponseModel, ITSAStatusResponseNotFound}
 import uk.gov.hmrc.incometaxobligations.repositories.ITSAStatusRepository

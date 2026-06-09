@@ -14,19 +14,19 @@
  * limitations under the License.
  */
 
-package uk.gov.hmrc.incometaxobligations.connectors.itsastatus
+package uk.gov.hmrc.incometaxobligations.models
 
 import play.api.libs.json.{Format, Json}
 import play.mvc.Http.Status.{INTERNAL_SERVER_ERROR, NO_CONTENT}
 
-object OptOutUpdateRequestModel {
+object OptOutUpdateRequestModel:
 
   val optOutUpdateReason: String = "10"
 
   case class OptOutUpdateRequest(taxYear: String, updateReason: String)
-  sealed trait OptOutUpdateResponse {
+  sealed trait OptOutUpdateResponse:
     val statusCode: Int
-  }
+    
   case class OptOutUpdateResponseSuccess(correlationId: String, statusCode: Int = NO_CONTENT) extends OptOutUpdateResponse
   case class ErrorItem(code: String, reason: String)
   case class OptOutUpdateResponseFailure(correlationId: String, statusCode: Int, failures: List[ErrorItem]) extends OptOutUpdateResponse
@@ -41,14 +41,13 @@ object OptOutUpdateRequestModel {
 
   case class OptOutUnprocessableEntityFailure(errorCode: String, errorDescription: String)
 
-  object OptOutUpdateResponseFailure {
+  object OptOutUpdateResponseFailure:
     def defaultFailure(correlationId: String = "unknown",
                        message: String = "Request failed due to unknown error"): OptOutUpdateResponseFailure =
       OptOutUpdateResponseFailure(correlationId,
         INTERNAL_SERVER_ERROR,
         List(ErrorItem("INTERNAL_SERVER_ERROR", message))
       )
-  }
 
   implicit val formatSuccess: Format[OptOutUpdateResponseSuccess] = Json.format[OptOutUpdateResponseSuccess]
   implicit val formatErrorItem: Format[ErrorItem] = Json.format[ErrorItem]
@@ -61,4 +60,3 @@ object OptOutUpdateRequestModel {
   implicit val formatOptOutErrorItemModel: Format[OptOutErrorModel] = Json.format[OptOutErrorModel]
   implicit val formatOptOutBackendFailure: Format[OptOutBackendFailure] = Json.format[OptOutBackendFailure]
   implicit val formatOptOutUnprocessableEntityFailure: Format[OptOutUnprocessableEntityFailure] = Json.format[OptOutUnprocessableEntityFailure]
-}

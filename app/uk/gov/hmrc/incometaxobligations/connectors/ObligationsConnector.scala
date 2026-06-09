@@ -28,71 +28,60 @@ import scala.concurrent.{ExecutionContext, Future}
 @Singleton
 class ObligationsConnector @Inject()(val http: HttpClientV2,
                                      val appConfig: AppConfig
-                                    )(implicit ec: ExecutionContext) extends RawResponseReads {
+                                    )(implicit ec: ExecutionContext) extends RawResponseReads:
 
-  private[connectors] def getOpenObligationsUrl(nino: String): String = {
+  private[connectors] def getOpenObligationsUrl(nino: String): String =
     s"${appConfig.desUrl}/enterprise/obligation-data/nino/$nino/ITSA?status=O"
-  }
 
-  private[connectors] def getAllObligationsDateRangeUrl(nino: String, from: String, to: String): String = {
+  private[connectors] def getAllObligationsDateRangeUrl(nino: String, from: String, to: String): String =
     s"${appConfig.desUrl}/enterprise/obligation-data/nino/$nino/ITSA?from=$from&to=$to"
-  }
 
-  private[connectors] def getFulfilledObligationsUrl(nino: String): String = {
+  private[connectors] def getFulfilledObligationsUrl(nino: String): String =
     s"${appConfig.desUrl}/enterprise/obligation-data/nino/$nino/ITSA?status=F"
-  }
 
   def headers: Seq[(String, String)] = appConfig.desAuthHeaders
 
-  private def callObligationsAPI(url: String)(implicit headerCarrier: HeaderCarrier): Future[ObligationsResponseModel] = {
+  private def callObligationsAPI(url: String)(implicit headerCarrier: HeaderCarrier): Future[ObligationsResponseModel] =
     http.get(url"$url")
       .setHeader(headers: _*)
       .execute[HttpResponse]
       .map { response =>
-        response.status match {
+        response.status match
           case OK =>
             logger.info(s"RESPONSE status: ${response.status}") // TODO - MIPR-2637: Inform V&C team about no longer logging the response body
             response.json.validate[ObligationsModel](ObligationsModel.desReadsApi1330).fold(
-              invalid => {
+              invalid =>
                 logger.error(s"Json validation error: $invalid")
-                ObligationsErrorModel(INTERNAL_SERVER_ERROR, "Json Validation Error. Parsing Report Deadlines Data")
-              },
-              valid => {
+                ObligationsErrorModel(INTERNAL_SERVER_ERROR, "Json Validation Error. Parsing Report Deadlines Data"),
+              valid =>
                 logger.info("successfully parsed response to ObligationsModel")
                 valid
-              }
             )
           case _ =>
             logger.error(s"RESPONSE status: ${response.status}, body: ${response.body}")
             ObligationsErrorModel(response.status, response.body)
-        }
       } recover {
       case ex =>
         logger.error(s"Unexpected failed future, ${ex.getMessage}")
         ObligationsErrorModel(INTERNAL_SERVER_ERROR, s"Unexpected failed future, ${ex.getMessage}")
     }
-  }
 
   def getOpenObligations(nino: String)
-                        (implicit headerCarrier: HeaderCarrier): Future[ObligationsResponseModel] = {
+                      (implicit headerCarrier: HeaderCarrier): Future[ObligationsResponseModel] =
     val url = getOpenObligationsUrl(nino)
 
     logger.debug(s"Calling GET $url")
     callObligationsAPI(url)
-  }
 
   def getAllObligationsWithinDateRange(nino: String, from: String, to: String)
-                                      (implicit headerCarrier: HeaderCarrier): Future[ObligationsResponseModel] = {
+                                      (implicit headerCarrier: HeaderCarrier): Future[ObligationsResponseModel] =
     val url = getAllObligationsDateRangeUrl(nino, from, to)
 
     logger.debug(s"Calling GET $url")
     callObligationsAPI(url)
-  }
 
   def getFulfilledObligations(nino: String)
-                             (implicit headerCarrier: HeaderCarrier): Future[ObligationsResponseModel] = {
+                             (implicit headerCarrier: HeaderCarrier): Future[ObligationsResponseModel] =
     val url = getFulfilledObligationsUrl(nino)
     logger.debug(s"Calling GET $url")
     callObligationsAPI(url)
-  }
-}

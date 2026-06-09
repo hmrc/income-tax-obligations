@@ -28,14 +28,11 @@ case class ITSAStatusResponseError(status: Int, reason: String) extends ITSAStat
 case class ITSAStatusResponseNotFound(status: Int, reason: String) extends ITSAStatusResponse
 
 
-object ITSAStatusResponseModel {
+object ITSAStatusResponseModel:
   implicit val format: Format[ITSAStatusResponseModel] = Json.format
-}
 
-object ITSAStatusResponseError {
+object ITSAStatusResponseError:
   implicit val format: Format[ITSAStatusResponseError] = Json.format
-}
 
-object ITSAStatusResponseNotFound {
+object ITSAStatusResponseNotFound:
   implicit val format: Format[ITSAStatusResponseNotFound] = Json.format
-}

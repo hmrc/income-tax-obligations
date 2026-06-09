@@ -17,7 +17,7 @@
 package uk.gov.hmrc.incometaxobligations.connectors
 
 import uk.gov.hmrc.incometaxobligations.connectors.hip.ITSAStatusConnector
-import uk.gov.hmrc.incometaxobligations.connectors.itsastatus.OptOutUpdateRequestModel.{ErrorItem, OptOutUpdateRequest, OptOutUpdateResponse, OptOutUpdateResponseFailure, OptOutUpdateResponseSuccess}
+import uk.gov.hmrc.incometaxobligations.models.OptOutUpdateRequestModel.{ErrorItem, OptOutUpdateRequest, OptOutUpdateResponse, OptOutUpdateResponseFailure, OptOutUpdateResponseSuccess}
 import uk.gov.hmrc.incometaxobligations.constants.ITSAStatusTestConstants.*
 import uk.gov.hmrc.incometaxobligations.mocks.MockHttpV2
 import uk.gov.hmrc.incometaxobligations.models.itsaStatus.{ITSAStatusResponse, ITSAStatusResponseModel}

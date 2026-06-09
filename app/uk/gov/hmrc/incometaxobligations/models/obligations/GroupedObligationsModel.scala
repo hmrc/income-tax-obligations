@@ -21,11 +21,8 @@ import play.api.libs.json.{Format, Json, Reads, __}
 
 case class GroupedObligationsModel(identification: String, obligations: Seq[SingleObligationModel])
 
-object GroupedObligationsModel {
-
+object GroupedObligationsModel:
   val desReadsApi1330: Reads[GroupedObligationsModel] = (
-
-
     (__ \\ "identification" \\ "referenceNumber").read[String] and
       (__ \\ "identification" \\ "incomeSourceType").read[String].flatMap { incomeSourceType =>
         (__ \\ "obligationDetails").read(
@@ -37,4 +34,3 @@ object GroupedObligationsModel {
     ) (GroupedObligationsModel.apply _)
 
   implicit val format: Format[GroupedObligationsModel] = Json.format[GroupedObligationsModel]
-}

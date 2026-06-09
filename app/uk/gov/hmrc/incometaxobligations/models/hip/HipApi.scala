@@ -16,11 +16,9 @@
 
 package uk.gov.hmrc.incometaxobligations.models.hip
 
-sealed trait HipApi {
+sealed trait HipApi:
   val name: String
-}
 
-case object ITSAStatusHipApi extends HipApi {
+case object ITSAStatusHipApi extends HipApi:
   val name = "get-itsa-status"
   def apply(): String = name
-}

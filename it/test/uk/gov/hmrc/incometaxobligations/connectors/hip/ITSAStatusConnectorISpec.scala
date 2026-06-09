@@ -16,7 +16,7 @@
 
 package uk.gov.hmrc.incometaxobligations.connectors.hip
 
-import uk.gov.hmrc.incometaxobligations.connectors.itsastatus.OptOutUpdateRequestModel._
+import uk.gov.hmrc.incometaxobligations.models.OptOutUpdateRequestModel._
 import uk.gov.hmrc.incometaxobligations.constants.ITSAStatusIntegrationTestConstants._
 import uk.gov.hmrc.incometaxobligations.helpers._
 import uk.gov.hmrc.incometaxobligations.models.itsaStatus._

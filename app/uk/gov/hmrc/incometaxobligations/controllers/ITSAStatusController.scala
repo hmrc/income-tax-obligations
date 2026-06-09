@@ -18,7 +18,7 @@ package uk.gov.hmrc.incometaxobligations.controllers
 
 import uk.gov.hmrc.incometaxobligations.connectors.hip
 import uk.gov.hmrc.incometaxobligations.connectors.hip.ITSAStatusConnector.CorrelationIdHeader
-import uk.gov.hmrc.incometaxobligations.connectors.itsastatus.OptOutUpdateRequestModel.*
+import uk.gov.hmrc.incometaxobligations.models.OptOutUpdateRequestModel.*
 import uk.gov.hmrc.incometaxobligations.controllers.predicates.AuthenticationPredicate
 import uk.gov.hmrc.incometaxobligations.models.itsaStatus.{ITSAStatusResponseError, ITSAStatusResponseNotFound}
 import org.apache.pekko.util.ByteString
@@ -37,14 +37,11 @@ class ITSAStatusController @Inject()(authentication: AuthenticationPredicate,
                                      cc: ControllerComponents,
                                      itsaStatusService: ITSAStatusService
                                     )
-                                    (implicit ec: ExecutionContext) extends BackendController(cc) with Logging {
+                                    (implicit ec: ExecutionContext) extends BackendController(cc) with Logging:
 
   def getITSAStatus(taxableEntityId: String, taxYear: String, futureYears: Boolean,
                     history: Boolean): Action[AnyContent] = authentication.async { implicit request =>
-    itsaStatusService.getITSAStatus(
-      taxableEntityId = taxableEntityId,
-      taxYear = taxYear,
-      futureYears = futureYears, history = history).map {
+    itsaStatusService.getITSAStatus(taxableEntityId, taxYear, futureYears, history).map {
       case Left(error: ITSAStatusResponseNotFound) =>
         logger.warn(s"ITSA Status not found: $error")
         Status(error.status)(Json.toJson(error))
@@ -61,28 +58,21 @@ class ITSAStatusController @Inject()(authentication: AuthenticationPredicate,
   }
 
   def updateItsaStatus(taxableEntityId: String): Action[AnyContent] = authentication.async { implicit request =>
-    def toResult(fResponse: Future[OptOutUpdateResponse]): Future[Result] = {
+    def toResult(fResponse: Future[OptOutUpdateResponse]): Future[Result] =
       fResponse.map {
-
         case success: OptOutUpdateResponseSuccess => new Result(ResponseHeader(Http.Status.NO_CONTENT,
           Map(CorrelationIdHeader -> success.correlationId)), HttpEntity.NoEntity, None)
 
         case fail: OptOutUpdateResponseFailure => new Result(ResponseHeader(fail.statusCode,
           Map(CorrelationIdHeader -> fail.correlationId)),
           HttpEntity.Strict(ByteString(Json.toJson(fail).toString()), None))
-
       }
-    }
 
-    val connectorResponse = for {
+    val connectorResponse = for
       json <- request.body.asJson
       optOutUpdateRequest <- json.validate[OptOutUpdateRequest].asOpt
-    } yield {
+    yield
       itsaStatusService.requestOptOutForTaxYear(taxableEntityId, optOutUpdateRequest)
-    }
-
+  
     connectorResponse.map(toResult).getOrElse(toResult(Future.successful(OptOutUpdateResponseFailure.defaultFailure())))
-
   }
-
-}

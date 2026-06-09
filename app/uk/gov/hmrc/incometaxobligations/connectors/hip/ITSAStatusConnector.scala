@@ -27,7 +27,7 @@ import uk.gov.hmrc.http.{HeaderCarrier, HttpResponse, StringContextOps}
 import uk.gov.hmrc.incometaxobligations.config.AppConfig
 import uk.gov.hmrc.incometaxobligations.connectors.RawResponseReads
 import uk.gov.hmrc.incometaxobligations.connectors.hip.ITSAStatusConnector.CorrelationIdHeader
-import uk.gov.hmrc.incometaxobligations.connectors.itsastatus.OptOutUpdateRequestModel.*
+import uk.gov.hmrc.incometaxobligations.models.OptOutUpdateRequestModel.*
 
 import javax.inject.Inject
 import scala.concurrent.{ExecutionContext, Future}
@@ -35,7 +35,7 @@ import scala.concurrent.{ExecutionContext, Future}
 
 class ITSAStatusConnector @Inject()(val http: HttpClientV2,
                                     val appConfig: AppConfig
-                                   )(implicit ec: ExecutionContext) extends RawResponseReads with Logging {
+                                   )(implicit ec: ExecutionContext) extends RawResponseReads with Logging:
 
   val hipHeaders: Seq[(String, String)] = appConfig.getHIPHeaders(ITSAStatusHipApi)
 
@@ -46,18 +46,14 @@ class ITSAStatusConnector @Inject()(val http: HttpClientV2,
     s"${appConfig.hipUrl}/itsd/itsa-status/update/$taxableEntityId"
 
   def getITSAStatus(taxableEntityId: String, taxYear: String, futureYears: Boolean, history: Boolean)
-                   (implicit headerCarrier: HeaderCarrier): Future[Either[ITSAStatusResponse, List[ITSAStatusResponseModel]]] = {
-
+                   (implicit headerCarrier: HeaderCarrier): Future[Either[ITSAStatusResponse, List[ITSAStatusResponseModel]]] =
+                   
     val url = getITSAStatusUrl(taxableEntityId, taxYear, futureYears.toString, history.toString)
 
-
-    logger.info("" +
-      s"Calling GET $url \n\nHeaders: $headerCarrier \nAuth Headers: $hipHeaders")
+    logger.info(s"Calling GET $url \n\nHeaders: $headerCarrier \nAuth Headers: $hipHeaders")
 
     http.get(url"$url")
-      .setHeader(
-        hipHeaders: _*
-      )
+      .setHeader(hipHeaders: _*)
       .execute[HttpResponse]
       .map { response =>
         response.status match
@@ -82,10 +78,9 @@ class ITSAStatusConnector @Inject()(val http: HttpClientV2,
         logger.error(s"Unexpected failed future, ${ex.getMessage}")
         Left(ITSAStatusResponseError(INTERNAL_SERVER_ERROR, s"Unexpected failed future, ${ex.getMessage}"))
     }
-  }
 
   def requestOptOutForTaxYear(taxableEntityId: String, optOutUpdateRequest: OptOutUpdateRequest)
-                             (implicit headerCarrier: HeaderCarrier): Future[OptOutUpdateResponse] = {
+                             (implicit headerCarrier: HeaderCarrier): Future[OptOutUpdateResponse] =
 
     http.put(url"${updateItsaStatusUrl(taxableEntityId)}")
       .withBody(Json.toJson[OptOutUpdateRequest](optOutUpdateRequest))
@@ -93,7 +88,7 @@ class ITSAStatusConnector @Inject()(val http: HttpClientV2,
       .execute[HttpResponse]
       .map { response =>
         val correlationId = response.headers.get(CorrelationIdHeader).map(_.head).getOrElse(s"Unknown_$CorrelationIdHeader")
-        response.status match {
+        response.status match
           case NO_CONTENT =>
             logger.info("ITSA status successfully updated")
             OptOutUpdateResponseSuccess(correlationId)
@@ -116,26 +111,19 @@ class ITSAStatusConnector @Inject()(val http: HttpClientV2,
           case status =>
             logger.error(s"Unexpected response status: $status, body: ${response.body}")
             OptOutUpdateResponseFailure.defaultFailure(correlationId = correlationId, message = s"Unexpected response status: $status")
-        }
       }
-  }
 
   private def handleValidation[T](validationResult: JsResult[T], correlationId: String, status: Int)
-                                 (extractErrorItems: T => List[ErrorItem]): OptOutUpdateResponseFailure = {
+                                 (extractErrorItems: T => List[ErrorItem]): OptOutUpdateResponseFailure =
     validationResult.fold(
-      invalid => {
+      invalid =>
         val msg = s"Json validation error parsing itsa-status update response, error $invalid"
         logger.error(msg)
-        OptOutUpdateResponseFailure.defaultFailure(msg, correlationId)
-      },
-      valid => {
+        OptOutUpdateResponseFailure.defaultFailure(msg, correlationId),
+      valid =>
         logger.debug(s"Unsuccessful response: $valid")
         OptOutUpdateResponseFailure(correlationId, status, extractErrorItems(valid))
-      }
     )
-  }
-}
 
-object ITSAStatusConnector {
+object ITSAStatusConnector:
   val CorrelationIdHeader = "CorrelationId"
-}

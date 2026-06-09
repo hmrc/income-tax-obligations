@@ -24,7 +24,7 @@ import org.scalatest.BeforeAndAfterEach
 import play.api.http.Status.NOT_FOUND
 import play.api.test.Helpers.{await, defaultAwaitTimeout}
 import uk.gov.hmrc.incometaxobligations.connectors.hip.ITSAStatusConnector
-import uk.gov.hmrc.incometaxobligations.connectors.itsastatus.OptOutUpdateRequestModel.{OptOutUpdateRequest, OptOutUpdateResponseSuccess}
+import uk.gov.hmrc.incometaxobligations.models.OptOutUpdateRequestModel.{OptOutUpdateRequest, OptOutUpdateResponseSuccess}
 import uk.gov.hmrc.incometaxobligations.models.itsaStatus.*
 import uk.gov.hmrc.incometaxobligations.repositories.ITSAStatusRepository
 import uk.gov.hmrc.incometaxobligations.utils.TestSupport

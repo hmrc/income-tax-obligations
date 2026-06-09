@@ -24,7 +24,7 @@ case class StatusDetail(submittedOn: String,
                         statusReason: String,
                         businessIncomePriorTo2Years: Option[BigDecimal] = None)
 
-object StatusDetail {
+object StatusDetail:
 
   val statusMapping = Map(
     "00" -> "No Status",
@@ -59,19 +59,17 @@ object StatusDetail {
     "19" -> "Return not considered"
   )
 
-  val convertStatusKeyToStatus: Reads[String] = {
+  val convertStatusKeyToStatus: Reads[String] =
     implicitly[Reads[String]].map(inputStatus => statusMapping.getOrElse(inputStatus, inputStatus))
-  }
-  val convertStatusReasonKeyToStatusReason: Reads[String] = {
+  
+  val convertStatusReasonKeyToStatusReason: Reads[String] =
     implicitly[Reads[String]].map(inputStatusReason => statusReasonMapping.getOrElse(inputStatusReason, inputStatusReason))
-  }
-  implicit val readsStatusDetail: Reads[StatusDetail] = {
+  
+  implicit val readsStatusDetail: Reads[StatusDetail] =
     ((__ \ "submittedOn").read[String] and
       (__ \ "status").read[String](convertStatusKeyToStatus) and
       (__ \ "statusReason").read[String](convertStatusReasonKeyToStatusReason) and
       (__ \ "businessIncomePriorTo2Years").readNullable[BigDecimal]
       )(StatusDetail.apply _)
-  }
 
   implicit val writesStatusDetail: Writes[StatusDetail] = Json.writes[StatusDetail]
-}

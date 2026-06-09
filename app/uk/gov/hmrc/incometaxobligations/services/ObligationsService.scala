@@ -24,7 +24,7 @@ import uk.gov.hmrc.incometaxobligations.models.obligations.ObligationsResponseMo
 import scala.concurrent.{ExecutionContext, Future}
 
 @Singleton
-class ObligationsService @Inject()(obligationsConnector: ObligationsConnector) {
+class ObligationsService @Inject()(obligationsConnector: ObligationsConnector):
   
   def getOpenObligations(nino: String)
                         (implicit headerCarrier: HeaderCarrier,
@@ -37,9 +37,5 @@ class ObligationsService @Inject()(obligationsConnector: ObligationsConnector) {
                                        ec: ExecutionContext): Future[ObligationsResponseModel] = 
     obligationsConnector.getAllObligationsWithinDateRange(nino, from, to)
   
-
   def getFulfilledObligations(nino: String)(implicit headerCarrier: HeaderCarrier, ec: ExecutionContext) =
     obligationsConnector.getFulfilledObligations(nino)
-
-
-}

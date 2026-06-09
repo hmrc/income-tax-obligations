@@ -32,12 +32,11 @@ import scala.util.{Failure, Success}
 @Singleton
 class AuthenticationPredicate @Inject()(val authConnector: MicroserviceAuthConnector, cc: ControllerComponents,
                                         val appConfig: AppConfig
-                                       )(implicit ec: ExecutionContext) extends BackendController(cc) with AuthorisedFunctions with Logging {
+                                       )(implicit ec: ExecutionContext) extends BackendController(cc) with AuthorisedFunctions with Logging:
 
-  val minimumConfidenceLevel: Int = ConfidenceLevel.fromInt(appConfig.confidenceLevel) match {
+  val minimumConfidenceLevel: Int = ConfidenceLevel.fromInt(appConfig.confidenceLevel) match
     case Success(value) => value.level
     case Failure(ex) => throw ex
-  }
 
   def async(action: Request[AnyContent] => Future[Result]): Action[AnyContent] =
     Action.async { implicit request =>
@@ -54,4 +53,3 @@ class AuthenticationPredicate @Inject()(val authConnector: MicroserviceAuthConne
           Unauthorized
       }
     }
-}

@@ -19,7 +19,7 @@ package uk.gov.hmrc.incometaxobligations.controllers
 import org.mongodb.scala.bson.BsonDocument
 import org.scalatest.BeforeAndAfterEach
 import uk.gov.hmrc.incometaxobligations.connectors.hip.ITSAStatusConnector.CorrelationIdHeader
-import uk.gov.hmrc.incometaxobligations.connectors.itsastatus.OptOutUpdateRequestModel.*
+import uk.gov.hmrc.incometaxobligations.models.OptOutUpdateRequestModel.*
 import uk.gov.hmrc.incometaxobligations.constants.ITSAStatusIntegrationTestConstants.*
 import uk.gov.hmrc.incometaxobligations.helpers.ComponentSpecBase
 import uk.gov.hmrc.incometaxobligations.helpers.servicemocks.HipITSAStatusStub

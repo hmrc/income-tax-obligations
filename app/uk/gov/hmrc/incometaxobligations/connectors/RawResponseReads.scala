@@ -19,8 +19,5 @@ package uk.gov.hmrc.incometaxobligations.connectors
 import play.api.Logging
 import uk.gov.hmrc.http.{HttpReads, HttpResponse}
 
-trait RawResponseReads extends Logging {
-
+trait RawResponseReads extends Logging:
   implicit val httpReads: HttpReads[HttpResponse] = (method: String, url: String, response: HttpResponse) => response
-
-}

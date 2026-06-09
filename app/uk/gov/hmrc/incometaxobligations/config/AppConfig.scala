@@ -25,7 +25,7 @@ import uk.gov.hmrc.play.bootstrap.config.ServicesConfig
 import java.util.{Base64, UUID}
 
 @Singleton
-class AppConfig @Inject()(servicesConfig: ServicesConfig) {
+class AppConfig @Inject()(servicesConfig: ServicesConfig):
 
   private def loadConfig(key: String) = servicesConfig.getString(key)
 
@@ -35,37 +35,27 @@ class AppConfig @Inject()(servicesConfig: ServicesConfig) {
   val desEnvironment: String = loadConfig("microservice.services.des.environment")
   val desToken: String = s"Bearer ${loadConfig("microservice.services.des.authorization-token")}"
 
-  val desAuthHeaders: Seq[(String, String)] = {
-    Seq(
+  val desAuthHeaders: Seq[(String, String)] = Seq(
       "Environment" -> desEnvironment,
       "Authorization" -> desToken
     )
-  }
+    
   lazy val hipUrl: String = servicesConfig.baseUrl("hip")
 
-  private def getHipCredentials: String = {
+  private def getHipCredentials: String =
     val clientId = loadConfig(s"microservice.services.hip.clientId")
     val secret = loadConfig(s"microservice.services.hip.secret")
-
     val encoded = Base64.getEncoder.encodeToString(s"$clientId:$secret".getBytes("UTF-8"))
 
     s"Basic $encoded"
-  }
 
-  def getHIPHeaders(hipApi: HipApi, messageTypeHeaderValue: Option[String] = None): Seq[(String, String)] = {
-    val additionalHeaders: Seq[(String, String)] = {
-      hipApi match {
-        case _ => Seq.empty
-      }
-    }
+
+  def getHIPHeaders(hipApi: HipApi, messageTypeHeaderValue: Option[String] = None): Seq[(String, String)] =
     messageTypeHeaderValue.map(mtv => Seq(("X-Message-Type", mtv))).getOrElse(Seq()) ++ Seq(
-      (HeaderNames.authorisation, getHipCredentials),
-      ("correlationId", UUID.randomUUID().toString)
-    ) ++ additionalHeaders
-  }
+      HeaderNames.authorisation -> getHipCredentials,
+      "correlationId" -> UUID.randomUUID().toString
+    )
 
   val confidenceLevel: Int = servicesConfig.getInt("auth.confidenceLevel")
   
   val ttlMinutes: Int = servicesConfig.getInt("mongodb.ttlMinutes")
-
-}

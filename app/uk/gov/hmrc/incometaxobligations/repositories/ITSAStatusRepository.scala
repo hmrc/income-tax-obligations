@@ -39,9 +39,9 @@ class ITSAStatusRepository @Inject() (
       ttl              = Duration.apply(appConfig.ttlMinutes, MINUTES),
       timestampSupport = timestampSupport,
       cacheIdType      = CacheIdType.SimpleCacheId
-    ) {
+    ):
 
-  def getCache[A: Reads](cacheId: String)(dataKey: DataKey[List[ITSAStatusResponseModel]]): Future[Option[A]] = {
+  def getCache[A: Reads](cacheId: String)(dataKey: DataKey[List[ITSAStatusResponseModel]]): Future[Option[A]] =
     def dataPath: JsPath = dataKey.unwrap.split('.').foldLeft[JsPath](JsPath)(_ \ _)
     findById(cacheId).map(
       _.flatMap(cache =>
@@ -50,9 +50,8 @@ class ITSAStatusRepository @Inject() (
           .fold(e => throw JsResultException(e), identity)
       )
     )
-  }
 
-  def updateCache[A: Writes](cacheId: String)(dataKey: DataKey[A], data: A) = {
+  def updateCache[A: Writes](cacheId: String)(dataKey: DataKey[A], data: A) =
     val timestamp = timestampSupport.timestamp()
     this.collection
       .findOneAndUpdate(
@@ -66,13 +65,9 @@ class ITSAStatusRepository @Inject() (
         options = FindOneAndUpdateOptions().upsert(true).returnDocument(ReturnDocument.AFTER)
       )
       .toFuture()
-  }
 
-  def deleteCache(cacheId: String): Future[Unit] = {
+  def deleteCache(cacheId: String): Future[Unit] =
     this.collection
       .deleteOne(Filters.equal("_id", cacheId))
       .toFuture()
       .map(_ => ())
-  }
-
-}
