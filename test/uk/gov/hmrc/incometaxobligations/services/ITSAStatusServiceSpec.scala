@@ -21,11 +21,10 @@ import org.mockito.Mockito.{mock, when}
 import org.mongodb.scala.SingleObservableFuture
 import org.mongodb.scala.bson.BsonDocument
 import org.scalatest.BeforeAndAfterEach
-import play.api.http.Status.{INTERNAL_SERVER_ERROR, NOT_FOUND}
+import play.api.http.Status.NOT_FOUND
 import play.api.test.Helpers.{await, defaultAwaitTimeout}
-import uk.gov.hmrc.incometaxobligations.connectors.ViewAndChangeConnector
 import uk.gov.hmrc.incometaxobligations.connectors.hip.ITSAStatusConnector
-import uk.gov.hmrc.incometaxobligations.connectors.itsastatus.OptOutUpdateRequestModel.{OptOutUpdateRequest, OptOutUpdateResponseFailure, OptOutUpdateResponseSuccess}
+import uk.gov.hmrc.incometaxobligations.models.OptOutUpdateRequestModel.{OptOutUpdateRequest, OptOutUpdateResponseSuccess}
 import uk.gov.hmrc.incometaxobligations.models.itsaStatus.*
 import uk.gov.hmrc.incometaxobligations.repositories.ITSAStatusRepository
 import uk.gov.hmrc.incometaxobligations.utils.TestSupport
@@ -36,13 +35,11 @@ import scala.concurrent.Future
 class ITSAStatusServiceSpec extends TestSupport with BeforeAndAfterEach{
 
   val itsaStatusConnector: ITSAStatusConnector = mock(classOf[ITSAStatusConnector])
-  val viewAndChangeConnector: ViewAndChangeConnector = mock(classOf[ViewAndChangeConnector])
   val repository: ITSAStatusRepository = app.injector.instanceOf[ITSAStatusRepository]
 
   val service: ITSAStatusService = ITSAStatusService(
     repository,
-    itsaStatusConnector,
-    viewAndChangeConnector
+    itsaStatusConnector
   )
 
   val id = "NX1000000AB"
@@ -118,22 +115,6 @@ class ITSAStatusServiceSpec extends TestSupport with BeforeAndAfterEach{
               cacheData shouldBe Some(List())
             }
           }
-
-          "return a list of status details from view and change and update the cache" when {
-            "no cache exists and HIP call fails with an error other than NOT_FOUND" in {
-              when(itsaStatusConnector.getITSAStatus(any(), any(), any(), any())(any()))
-                .thenReturn(Future.successful(Left(ITSAStatusResponseError(INTERNAL_SERVER_ERROR, "internal error"))))
-
-              when(viewAndChangeConnector.getITSAStatus(any(), any(), any(), any())(any()))
-                .thenReturn(Future.successful(Right(List(responseModel))))
-
-              val result = service.getITSAStatus(id, taxYear, futureYears, history)
-              await(result) shouldBe Right(List(responseModel))
-
-              val cacheData = await(repository.getCache[List[ITSAStatusResponseModel]](id)(dataKey))
-              cacheData shouldBe Some(List(responseModel))
-            }
-          }
         }
       })
     }
@@ -146,29 +127,6 @@ class ITSAStatusServiceSpec extends TestSupport with BeforeAndAfterEach{
         when(itsaStatusConnector.requestOptOutForTaxYear(any(), any())(any()))
           .thenReturn(Future.successful(OptOutUpdateResponseSuccess("Successfully opted out")))
 
-        val result = service.requestOptOutForTaxYear(id, optOutUpdateRequest)
-        await(result) shouldBe OptOutUpdateResponseSuccess("Successfully opted out")
-
-        val dataKeyNames = List(
-          s"ITSA_Status_${taxYear}_FutureAndHistory",
-          s"ITSA_Status_${taxYear}_Future",
-          s"ITSA_Status_${taxYear}_History",
-          s"ITSA_Status_$taxYear"
-        )
-        dataKeyNames.foreach { keyName =>
-          val cacheData = await(repository.getCache[List[ITSAStatusResponseModel]](id)(DataKey[List[ITSAStatusResponseModel]](keyName)))
-          cacheData shouldBe None
-        }
-      }
-
-      "delete the cache and return a successful response from V&C when HIP fails" in {
-        val optOutUpdateRequest = OptOutUpdateRequest(taxYear, "Reason")
-        when(itsaStatusConnector.requestOptOutForTaxYear(any(), any())(any()))
-          .thenReturn(Future.successful(OptOutUpdateResponseFailure("corrId", 400, List.empty)))
-
-        when(viewAndChangeConnector.requestOptOutForTaxYear(any(), any())(any()))
-          .thenReturn(Future.successful(OptOutUpdateResponseSuccess("Successfully opted out")))
-        
         val result = service.requestOptOutForTaxYear(id, optOutUpdateRequest)
         await(result) shouldBe OptOutUpdateResponseSuccess("Successfully opted out")
 

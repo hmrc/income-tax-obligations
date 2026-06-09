@@ -19,11 +19,10 @@ package uk.gov.hmrc.incometaxobligations.controllers
 import uk.gov.hmrc.incometaxobligations.constants.BaseIntegrationTestConstants.*
 import uk.gov.hmrc.incometaxobligations.constants.ReportDeadlinesIntegrationTestConstants.*
 import uk.gov.hmrc.incometaxobligations.helpers.ComponentSpecBase
-import uk.gov.hmrc.incometaxobligations.helpers.servicemocks.{DesReportDeadlinesStub, ViewAndChangeStub}
+import uk.gov.hmrc.incometaxobligations.helpers.servicemocks.DesReportDeadlinesStub
 import uk.gov.hmrc.incometaxobligations.models.obligations.ObligationStatus.Open
 import uk.gov.hmrc.incometaxobligations.models.obligations.{ObligationsErrorModel, ObligationsModel}
 import play.api.http.Status.*
-import play.api.libs.json.Json
 
 class ObligationsControllerISpec extends ComponentSpecBase {
 
@@ -39,7 +38,7 @@ class ObligationsControllerISpec extends ComponentSpecBase {
 
             DesReportDeadlinesStub.stubGetDesAllObligations(testNino, from, to)
 
-            val res = IncomeTaxViewChange.getAllObligations(testNino, from, to)
+            val res = Obligations.getAllObligations(testNino, from, to)
 
             DesReportDeadlinesStub.verifyGetDesAllObligations(testNino, from, to)
 
@@ -54,29 +53,13 @@ class ObligationsControllerISpec extends ComponentSpecBase {
 
             DesReportDeadlinesStub.stubGetDesAllObligations(testNino, from, to, Open.code)
 
-            val res = IncomeTaxViewChange.getAllObligations(testNino, from, to)
+            val res = Obligations.getAllObligations(testNino, from, to)
 
             DesReportDeadlinesStub.verifyGetDesAllObligations(testNino, from, to)
 
             res should have(
               httpStatus(OK),
               jsonBodyAs[ObligationsModel](obligationsModelWithStatus(testNino, Open.name))
-            )
-          }
-
-          "the call to DES fails but viewAndChange return status is Open" in {
-            isAuthorised(true)
-            val successResponse = obligationsModelWithStatus(testNino, Open.name)
-            DesReportDeadlinesStub.stubGetDesAllObligationsError(testNino, from, to)(OK, "{}")
-            ViewAndChangeStub.stubGetAllObligations(testNino, from, to, "200", Json.toJson(successResponse).toString)
-
-            val res = IncomeTaxViewChange.getAllObligations(testNino, from, to)
-
-            DesReportDeadlinesStub.verifyGetDesAllObligations(testNino, from, to)
-
-            res should have(
-              httpStatus(OK),
-              jsonBodyAs[ObligationsModel](successResponse)
             )
           }
         }
@@ -86,9 +69,8 @@ class ObligationsControllerISpec extends ComponentSpecBase {
 
             val error = ObligationsErrorModel(INTERNAL_SERVER_ERROR, "Json Validation Error. Parsing Report Deadlines Data")
             DesReportDeadlinesStub.stubGetDesAllObligationsError(testNino, from, to)(OK, "{}")
-            ViewAndChangeStub.stubGetAllObligationsError(testNino, from, to)(INTERNAL_SERVER_ERROR, "Json Validation Error. Parsing Report Deadlines Data")
 
-            val res = IncomeTaxViewChange.getAllObligations(testNino, from, to)
+            val res = Obligations.getAllObligations(testNino, from, to)
 
             DesReportDeadlinesStub.verifyGetDesAllObligations(testNino, from, to)
 
@@ -102,9 +84,8 @@ class ObligationsControllerISpec extends ComponentSpecBase {
           isAuthorised(true)
 
           DesReportDeadlinesStub.stubGetDesAllObligationsError(testNino, from, to)(NOT_FOUND, "Error, not found")
-          ViewAndChangeStub.stubGetAllObligationsError(testNino, from, to)(NOT_FOUND, "Error, not found")
 
-          val res = IncomeTaxViewChange.getAllObligations(testNino, from, to)
+          val res = Obligations.getAllObligations(testNino, from, to)
 
           DesReportDeadlinesStub.verifyGetDesAllObligations(testNino, from, to)
 
@@ -119,7 +100,7 @@ class ObligationsControllerISpec extends ComponentSpecBase {
       s"return $UNAUTHORIZED" in {
         isAuthorised(false)
 
-        val res = IncomeTaxViewChange.getAllObligations(testNino, from, to)
+        val res = Obligations.getAllObligations(testNino, from, to)
 
         res should have(
           httpStatus(UNAUTHORIZED),
@@ -139,7 +120,7 @@ class ObligationsControllerISpec extends ComponentSpecBase {
         DesReportDeadlinesStub.stubGetDesOpenReportDeadlines(testNino)
 
         When(s"I call GET /income-tax-obligations/$testNino/report-deadlines")
-        val res = IncomeTaxViewChange.getOpenObligations(testNino)
+        val res = Obligations.getOpenObligations(testNino)
 
         DesReportDeadlinesStub.verifyGetOpenDesReportDeadlines(testNino)
 
@@ -160,7 +141,7 @@ class ObligationsControllerISpec extends ComponentSpecBase {
         DesReportDeadlinesStub.stubGetDesOpenReportDeadlinesError(testNino)
 
         When(s"I call GET /income-tax-obligations/$testNino/report-deadlines")
-        val res = IncomeTaxViewChange.getOpenObligations(testNino)
+        val res = Obligations.getOpenObligations(testNino)
 
         DesReportDeadlinesStub.verifyGetOpenDesReportDeadlines(testNino)
 
@@ -177,7 +158,7 @@ class ObligationsControllerISpec extends ComponentSpecBase {
         isAuthorised(false)
 
         When(s"I call GET /income-tax-obligations/$testNino/report-deadlines")
-        val res = IncomeTaxViewChange.getOpenObligations(testNino)
+        val res = Obligations.getOpenObligations(testNino)
 
         res should have(
           httpStatus(UNAUTHORIZED),
@@ -196,7 +177,7 @@ class ObligationsControllerISpec extends ComponentSpecBase {
 
             DesReportDeadlinesStub.stubGetFulfilledObligations(testNino)
 
-            val res = IncomeTaxViewChange.getFulfilledObligations(testNino)
+            val res = Obligations.getFulfilledObligations(testNino)
 
             DesReportDeadlinesStub.verifyGetFulfilledObligations(testNino)
 
@@ -210,9 +191,8 @@ class ObligationsControllerISpec extends ComponentSpecBase {
           isAuthorised(true)
 
           DesReportDeadlinesStub.stubGetFulfilledObligationsError(testNino)(NOT_FOUND, "Error, not found")
-          ViewAndChangeStub.stubGetFulfilledObligationsError(testNino)(NOT_FOUND, "Error, not found")
 
-          val res = IncomeTaxViewChange.getFulfilledObligations(testNino)
+          val res = Obligations.getFulfilledObligations(testNino)
 
           DesReportDeadlinesStub.verifyGetFulfilledObligations(testNino)
 
@@ -228,7 +208,7 @@ class ObligationsControllerISpec extends ComponentSpecBase {
       s"return $UNAUTHORIZED" in {
         isAuthorised(false)
 
-        val res = IncomeTaxViewChange.getFulfilledObligations(testNino)
+        val res = Obligations.getFulfilledObligations(testNino)
 
         res should have(
           httpStatus(UNAUTHORIZED),

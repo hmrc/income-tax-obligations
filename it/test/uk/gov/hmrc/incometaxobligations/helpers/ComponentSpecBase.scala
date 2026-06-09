@@ -77,7 +77,7 @@ trait ComponentSpecBase extends TestSuite with CustomMatchers
     }
   }
 
-  object IncomeTaxViewChange {
+  object Obligations {
     def getPaymentAllocations(nino: String, paymentLot: String, paymentLotItem: String): WSResponse = {
       get(s"/$nino/payment-allocations/$paymentLot/$paymentLotItem")
     }

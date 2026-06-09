@@ -25,10 +25,8 @@ import scala.concurrent.ExecutionContext
 
 class TestOnlyController @Inject()(itsaStatusRepository: ITSAStatusRepository,
                                    cc: ControllerComponents)
-                                  (implicit ec: ExecutionContext) extends BackendController(cc) {
+                                  (implicit ec: ExecutionContext) extends BackendController(cc):
 
   def deleteUserFromCache(nino: String): Action[AnyContent] = Action.async { _ =>
     itsaStatusRepository.deleteCache(nino).map(_ => NoContent)
   }
-
-}

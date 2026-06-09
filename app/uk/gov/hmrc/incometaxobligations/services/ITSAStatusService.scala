@@ -19,8 +19,8 @@ package uk.gov.hmrc.incometaxobligations.services
 import play.api.Logging
 import uk.gov.hmrc.http.HeaderCarrier
 import uk.gov.hmrc.incometaxobligations.connectors.hip.ITSAStatusConnector
-import uk.gov.hmrc.incometaxobligations.connectors.itsastatus.OptOutUpdateRequestModel.{OptOutUpdateRequest, OptOutUpdateResponse, OptOutUpdateResponseSuccess}
-import uk.gov.hmrc.incometaxobligations.connectors.{RawResponseReads, ViewAndChangeConnector}
+import uk.gov.hmrc.incometaxobligations.models.OptOutUpdateRequestModel.{OptOutUpdateRequest, OptOutUpdateResponse}
+import uk.gov.hmrc.incometaxobligations.connectors.RawResponseReads
 import uk.gov.hmrc.incometaxobligations.models.itsaStatus.{ITSAStatusResponse, ITSAStatusResponseModel, ITSAStatusResponseNotFound}
 import uk.gov.hmrc.incometaxobligations.repositories.ITSAStatusRepository
 import uk.gov.hmrc.mongo.cache.DataKey
@@ -29,8 +29,7 @@ import javax.inject.Inject
 import scala.concurrent.{ExecutionContext, Future}
 
 case class ITSAStatusService @Inject()(itsaRepository: ITSAStatusRepository,
-                                       itsaConnector: ITSAStatusConnector,
-                                       viewAndChangeConnector: ViewAndChangeConnector) extends RawResponseReads with Logging {
+                                       itsaConnector: ITSAStatusConnector) extends RawResponseReads with Logging:
 
   def itsaStatusDataKey(taxyear: String,
                         futureYears: Boolean, history: Boolean): DataKey[List[ITSAStatusResponseModel]] = {
@@ -42,13 +41,6 @@ case class ITSAStatusService @Inject()(itsaRepository: ITSAStatusRepository,
     }
     DataKey[List[ITSAStatusResponseModel]](keyName)
   }
-
-  lazy val allITSAStatusKeyNames: String => List[String] = taxyear => List(
-    s"ITSA_Status_${taxyear}_FutureAndHistory",
-    s"ITSA_Status_${taxyear}_Future",
-    s"ITSA_Status_${taxyear}_History",
-    s"ITSA_Status_$taxyear"
-  )
 
   def getITSAStatus(taxableEntityId: String, taxYear: String, futureYears: Boolean, history: Boolean)
                    (implicit headerCarrier: HeaderCarrier, ec: ExecutionContext): Future[Either[ITSAStatusResponse, List[ITSAStatusResponseModel]]] = {
@@ -66,30 +58,22 @@ case class ITSAStatusService @Inject()(itsaRepository: ITSAStatusRepository,
                                      futureYears: Boolean,
                                      history: Boolean,
                                      dataKey: DataKey[List[ITSAStatusResponseModel]])
-                            (implicit headerCarrier: HeaderCarrier, ec: ExecutionContext): Future[Either[ITSAStatusResponse, List[ITSAStatusResponseModel]]] = {
-    val optItsaStatus = itsaConnector.getITSAStatus(taxableEntityId, taxYear, futureYears, history).flatMap {
-      case Right(success) => Future.successful(Right(success))
-      case Left(error: ITSAStatusResponseNotFound) => Future.successful(Left(error))
-      case _ => viewAndChangeConnector.getITSAStatus(taxableEntityId, taxYear, futureYears, history)
+                            (implicit headerCarrier: HeaderCarrier, ec: ExecutionContext): Future[Either[ITSAStatusResponse, List[ITSAStatusResponseModel]]] =
+    val optItsaStatus = itsaConnector.getITSAStatus(taxableEntityId, taxYear, futureYears, history)
+
+    optItsaStatus.flatMap {
+      case Right(success: List[ITSAStatusResponseModel]) =>
+        itsaRepository.updateCache(taxableEntityId)(dataKey, success)
+          .map(_ => Right(success))
+      case Left(error: ITSAStatusResponseNotFound) =>
+        itsaRepository.updateCache(taxableEntityId)(dataKey, List())
+          .map(_ => Left(error))
+      case Left(error) => Future.successful(Left(error))
     }
-     optItsaStatus.flatMap {
-       case Right(success: List[ITSAStatusResponseModel]) =>
-         itsaRepository.updateCache(taxableEntityId)(dataKey, success)
-           .map(_ => Right(success))
-       case Left(error: ITSAStatusResponseNotFound) =>
-         itsaRepository.updateCache(taxableEntityId)(dataKey, List())
-           .map(_ => Left(error))
-        case Left(error) => Future.successful(Left(error))
-     }
-  }
 
   def requestOptOutForTaxYear(taxableEntityId: String, optOutUpdateRequest: OptOutUpdateRequest)
-                             (implicit headerCarrier: HeaderCarrier, ec: ExecutionContext): Future[OptOutUpdateResponse] = {
-    itsaRepository.deleteCache(taxableEntityId).flatMap { _ =>
-      itsaConnector.requestOptOutForTaxYear(taxableEntityId, optOutUpdateRequest).flatMap {
-        case success: OptOutUpdateResponseSuccess => Future.successful(success)
-        case _ => viewAndChangeConnector.requestOptOutForTaxYear(taxableEntityId, optOutUpdateRequest)
-      }
-    }
-  }
-}
+                             (implicit headerCarrier: HeaderCarrier, ec: ExecutionContext): Future[OptOutUpdateResponse] =
+    for
+      _ <- itsaRepository.deleteCache(taxableEntityId)
+      response <- itsaConnector.requestOptOutForTaxYear(taxableEntityId, optOutUpdateRequest)
+    yield response

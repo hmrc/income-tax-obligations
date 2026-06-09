@@ -31,17 +31,16 @@ import scala.concurrent.ExecutionContext
 class ObligationsController @Inject()(val authentication: AuthenticationPredicate,
                                       val obligationsService: ObligationsService,
                                       cc: ControllerComponents
-                                     )(implicit ec: ExecutionContext) extends BackendController(cc) with Logging {
-  private def handleObligationsResponse(response: ObligationsResponseModel): Result = {
-    response match {
+                                     )(implicit ec: ExecutionContext) extends BackendController(cc) with Logging:
+                                     
+  private def handleObligationsResponse(response: ObligationsResponseModel): Result =
+    response match
       case success: ObligationsModel =>
         logger.debug(s"Successful Response: $success")
         Ok(Json.toJson(success))
       case error: ObligationsErrorModel =>
         logger.error(s"Error Response: $error")
         Status(error.status)(Json.toJson(error))
-    }
-  }
 
   def getOpenObligations(nino: String): Action[AnyContent] = authentication.async { implicit request =>
     logger.debug("" +
@@ -65,5 +64,3 @@ class ObligationsController @Inject()(val authentication: AuthenticationPredicat
       handleObligationsResponse(response)
     )
   }
-
-}

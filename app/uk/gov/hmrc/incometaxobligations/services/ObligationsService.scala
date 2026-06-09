@@ -18,38 +18,24 @@ package uk.gov.hmrc.incometaxobligations.services
 
 import com.google.inject.{Inject, Singleton}
 import uk.gov.hmrc.http.HeaderCarrier
-import uk.gov.hmrc.incometaxobligations.connectors.{ObligationsConnector, ViewAndChangeConnector}
-import uk.gov.hmrc.incometaxobligations.models.obligations.{ObligationsModel, ObligationsResponseModel}
+import uk.gov.hmrc.incometaxobligations.connectors.ObligationsConnector
+import uk.gov.hmrc.incometaxobligations.models.obligations.ObligationsResponseModel
 
 import scala.concurrent.{ExecutionContext, Future}
 
 @Singleton
-class ObligationsService @Inject()(obligationsConnector: ObligationsConnector,
-                                  viewAndChangeConnector: ViewAndChangeConnector) {
+class ObligationsService @Inject()(obligationsConnector: ObligationsConnector):
   
   def getOpenObligations(nino: String)
                         (implicit headerCarrier: HeaderCarrier,
-                         ec: ExecutionContext): Future[ObligationsResponseModel] = {
-    obligationsConnector.getOpenObligations(nino).flatMap {
-      case success: ObligationsModel => Future.successful(success)
-      case _ => viewAndChangeConnector.getOpenObligations(nino)
-    }
-  }
+                         ec: ExecutionContext): Future[ObligationsResponseModel] = 
+    obligationsConnector.getOpenObligations(nino)
+
 
   def getAllObligationsWithinDateRange(nino: String, from: String, to: String)
                                       (implicit headerCarrier: HeaderCarrier,
-                                       ec: ExecutionContext): Future[ObligationsResponseModel] = {
-    obligationsConnector.getAllObligationsWithinDateRange(nino, from, to).flatMap {
-      case success: ObligationsModel => Future.successful(success)
-      case _ => viewAndChangeConnector.getAllObligationsWithinDateRange(nino, from, to)
-    }
-  }
-
-  def getFulfilledObligations(nino: String)(implicit headerCarrier: HeaderCarrier, ec: ExecutionContext) ={
-    obligationsConnector.getFulfilledObligations(nino).flatMap {
-      case success: ObligationsModel => Future.successful(success)
-      case _ => viewAndChangeConnector.getFulfilledObligations(nino)
-    }
-  }
-
-}
+                                       ec: ExecutionContext): Future[ObligationsResponseModel] = 
+    obligationsConnector.getAllObligationsWithinDateRange(nino, from, to)
+  
+  def getFulfilledObligations(nino: String)(implicit headerCarrier: HeaderCarrier, ec: ExecutionContext) =
+    obligationsConnector.getFulfilledObligations(nino)

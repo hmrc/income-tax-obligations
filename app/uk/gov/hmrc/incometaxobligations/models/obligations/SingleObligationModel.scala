@@ -24,10 +24,9 @@ import java.time.LocalDate
 
 case class ObligationStatus(code: String, name: String)
 
-object ObligationStatus {
+object ObligationStatus:
   val Open = ObligationStatus("O", "Open")
   val Fulfilled = ObligationStatus("F", "Fulfilled")
-}
 
 case class SingleObligationModel(start: LocalDate,
                                  end: LocalDate,
@@ -38,8 +37,7 @@ case class SingleObligationModel(start: LocalDate,
                                  status: String
                               )
 
-object SingleObligationModel {
-
+object SingleObligationModel:
   def desReadsApi(incomeSourceType: String): Reads[SingleObligationModel] = (
     (__ \ "inboundCorrespondenceFromDate").read[LocalDate] and
       (__ \ "inboundCorrespondenceToDate").read[LocalDate] and
@@ -61,4 +59,3 @@ object SingleObligationModel {
     )(SingleObligationModel.apply _)
 
   implicit val format: Format[SingleObligationModel] = Json.format[SingleObligationModel]
-}

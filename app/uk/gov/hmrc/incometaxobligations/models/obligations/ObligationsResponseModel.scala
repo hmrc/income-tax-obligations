@@ -25,14 +25,11 @@ case class ObligationsModel(obligations: Seq[GroupedObligationsModel]) extends O
 case class ObligationsErrorModel(status: Int, reason: String) extends ObligationsResponseModel
 
 
-object ObligationsErrorModel {
+object ObligationsErrorModel:
   implicit val format: Format[ObligationsErrorModel] = Json.format[ObligationsErrorModel]
-}
 
-object ObligationsModel {
-
+object ObligationsModel:
   val desReadsApi1330: Reads[ObligationsModel] =
     (__ \ "obligations").read(Reads.seq(GroupedObligationsModel.desReadsApi1330)).map(ObligationsModel(_))
 
   implicit val format: Format[ObligationsModel] = Json.format[ObligationsModel]
-}
