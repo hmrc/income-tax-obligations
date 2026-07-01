@@ -21,7 +21,7 @@ import uk.gov.hmrc.http.HeaderCarrier
 import uk.gov.hmrc.incometaxobligations.connectors.hip.ITSAStatusConnector
 import uk.gov.hmrc.incometaxobligations.models.OptOutUpdateRequestModel.{OptOutUpdateRequest, OptOutUpdateResponse}
 import uk.gov.hmrc.incometaxobligations.connectors.RawResponseReads
-import uk.gov.hmrc.incometaxobligations.models.itsaStatus.{ITSAStatusResponse, ITSAStatusResponseModel, ITSAStatusResponseNotFound}
+import uk.gov.hmrc.incometaxobligations.models.itsaStatus.{ITSAStatusResponse, ITSAStatusResponseModel, ITSAStatusResponseNotFound, ITSAStatusYearOfMigrationModel}
 import uk.gov.hmrc.incometaxobligations.repositories.ITSAStatusRepository
 import uk.gov.hmrc.mongo.cache.DataKey
 
@@ -30,9 +30,11 @@ import scala.concurrent.{ExecutionContext, Future}
 
 case class ITSAStatusService @Inject()(itsaRepository: ITSAStatusRepository,
                                        itsaConnector: ITSAStatusConnector) extends RawResponseReads with Logging:
+  
+  private final val earliestMtdTaxYear = "20-21"
 
-  def itsaStatusDataKey(taxyear: String,
-                        futureYears: Boolean, history: Boolean): DataKey[List[ITSAStatusResponseModel]] = {
+  private def itsaStatusDataKey(taxyear: String,
+                                futureYears: Boolean, history: Boolean): DataKey[List[ITSAStatusResponseModel]] = {
     val keyName = (futureYears, history) match {
       case (true, true) => s"ITSA_Status_${taxyear}_FutureAndHistory"
       case (true, false) => s"ITSA_Status_${taxyear}_Future"
@@ -53,12 +55,12 @@ case class ITSAStatusService @Inject()(itsaRepository: ITSAStatusRepository,
     }
   }
 
-  def getOptItsaStatusAndUpdateCache(taxableEntityId: String,
-                                     taxYear: String,
-                                     futureYears: Boolean,
-                                     history: Boolean,
-                                     dataKey: DataKey[List[ITSAStatusResponseModel]])
-                            (implicit headerCarrier: HeaderCarrier, ec: ExecutionContext): Future[Either[ITSAStatusResponse, List[ITSAStatusResponseModel]]] =
+  private def getOptItsaStatusAndUpdateCache(taxableEntityId: String,
+                                             taxYear: String,
+                                             futureYears: Boolean,
+                                             history: Boolean,
+                                             dataKey: DataKey[List[ITSAStatusResponseModel]])
+                                            (implicit headerCarrier: HeaderCarrier, ec: ExecutionContext): Future[Either[ITSAStatusResponse, List[ITSAStatusResponseModel]]] =
     val optItsaStatus = itsaConnector.getITSAStatus(taxableEntityId, taxYear, futureYears, history)
 
     optItsaStatus.flatMap {
@@ -77,3 +79,13 @@ case class ITSAStatusService @Inject()(itsaRepository: ITSAStatusRepository,
       _ <- itsaRepository.deleteCache(taxableEntityId)
       response <- itsaConnector.requestOptOutForTaxYear(taxableEntityId, optOutUpdateRequest)
     yield response
+    
+  def getYearOfMigration(taxableEntityId: String)(implicit headerCarrier: HeaderCarrier, ec: ExecutionContext): Future[Either[ITSAStatusResponse, ITSAStatusYearOfMigrationModel]] =
+    itsaConnector.getITSAStatus(taxableEntityId, earliestMtdTaxYear, futureYears = true, history = false).flatMap {
+      case Right(success: List[ITSAStatusResponseModel]) => 
+        success.minByOption(_.taxYear.take(4).toInt) match {
+          case Some(status) => Future.successful(Right(ITSAStatusYearOfMigrationModel((status.taxYear.take(4).toInt + 1).toString)))
+          case None => Future.successful(Left(ITSAStatusResponseNotFound(404, "No year of migration found")))
+        }
+      case Left(error) => Future.successful(Left(error))
+    }

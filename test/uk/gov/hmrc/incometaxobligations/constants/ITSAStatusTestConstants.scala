@@ -31,6 +31,7 @@ object ITSAStatusTestConstants {
   val statusDetailMinimalHip: (String, String) => StatusDetail = (status, statusReason) =>
     statusDetailMinimal.copy(status = status, statusReason = statusReason)
   val successITSAStatusResponseModel = ITSAStatusResponseModel("2019-20", Some(List(statusDetail)))
+  val successYearOfMigrationResponseModel = ITSAStatusYearOfMigrationModel("2021")
   val successITSAStatusResponseModelHip: (String, String) => ITSAStatusResponseModel = (status, statusReason) =>
     ITSAStatusResponseModel("2019-20", Some(List(statusDetailHip(status, statusReason))))
   val successITSAStatusResponseModelMinimal = ITSAStatusResponseModel("2019-20", None)
@@ -168,6 +169,13 @@ object ITSAStatusTestConstants {
       |}
       |""".stripMargin
   )
+
+  val successfulYearOfMigrationResult = Json.parse(
+    """
+      |{
+      |    "yearOfMigrationEndYear": "2021"
+      |}
+      |""".stripMargin)
 
   val successHttpResponse = HttpResponse(Status.OK, Json.arr(successITSAStatusResponseJson), Map.empty)
   val errorHttpResponse = HttpResponse(Status.BAD_REQUEST, "Dummy message", Map.empty)

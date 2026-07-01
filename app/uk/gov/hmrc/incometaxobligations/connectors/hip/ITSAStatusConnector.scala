@@ -50,6 +50,8 @@ class ITSAStatusConnector @Inject()(val http: HttpClientV2,
                    
     val url = getITSAStatusUrl(taxableEntityId, taxYear, futureYears.toString, history.toString)
 
+    println(Console.MAGENTA + s"Calling GET $url \n\nHeaders: $headerCarrier \nAuth Headers: $hipHeaders" + Console.RESET)
+
     logger.info(s"Calling GET $url \n\nHeaders: $headerCarrier \nAuth Headers: $hipHeaders")
 
     http.get(url"$url")

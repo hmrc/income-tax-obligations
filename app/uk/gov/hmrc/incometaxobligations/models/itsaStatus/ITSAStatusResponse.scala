@@ -27,6 +27,7 @@ case class ITSAStatusResponseError(status: Int, reason: String) extends ITSAStat
 
 case class ITSAStatusResponseNotFound(status: Int, reason: String) extends ITSAStatusResponse
 
+case class ITSAStatusYearOfMigrationModel(yearOfMigrationEndYear: String) extends ITSAStatusResponse
 
 object ITSAStatusResponseModel:
   implicit val format: Format[ITSAStatusResponseModel] = Json.format
@@ -36,3 +37,6 @@ object ITSAStatusResponseError:
 
 object ITSAStatusResponseNotFound:
   implicit val format: Format[ITSAStatusResponseNotFound] = Json.format
+  
+object ITSAStatusYearOfMigrationModel:
+  implicit val format: Format[ITSAStatusYearOfMigrationModel] = Json.format

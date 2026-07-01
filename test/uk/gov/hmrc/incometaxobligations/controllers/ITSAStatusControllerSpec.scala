@@ -93,4 +93,28 @@ class ITSAStatusControllerSpec extends ControllerBaseSpec with MockMicroserviceA
       }
     }
   }
+
+  "ITSAStatusController.getYearOfMigration" should {
+    "return a valid year of migration response" when {
+      "called by an authenticated user and ITSAStatusConnector gives a valid response" in {
+        mockAuth()
+        mockHIPYearOfMigration(Right(successYearOfMigrationResponseModel))
+        lazy val result = TestITSAStatusController.getYearOfMigration(testNino)(fakeGetRequest())
+
+        contentType(result) shouldBe Some("application/json")
+        status(result) shouldBe OK
+        contentAsJson(result) shouldBe Json.toJson(successfulYearOfMigrationResult)
+      }
+
+      "called by an authenticated user and ITSAStatusConnector gives an error response" in {
+        mockAuth()
+        mockHIPYearOfMigration(Left(errorITSAStatusNotFoundError))
+        lazy val result = TestITSAStatusController.getYearOfMigration(testNino)(fakeGetRequest())
+
+        contentType(result) shouldBe Some("application/json")
+        status(result) shouldBe errorITSAStatusNotFoundError.status
+        contentAsJson(result) shouldBe Json.toJson(errorITSAStatusNotFoundError)
+      }
+    }
+  }
 }
