@@ -16,7 +16,7 @@
 
 package uk.gov.hmrc.incometaxobligations.mocks.hip
 
-import uk.gov.hmrc.incometaxobligations.models.itsaStatus.{ITSAStatusResponse, ITSAStatusResponseModel}
+import uk.gov.hmrc.incometaxobligations.models.itsaStatus.{ITSAStatusResponse, ITSAStatusResponseModel, ITSAStatusYearOfMigrationModel}
 import org.mockito.ArgumentMatchers
 import org.mockito.ArgumentMatchers.any
 import org.mockito.Mockito.{mock, reset, when}
@@ -40,4 +40,7 @@ trait MockITSAStatusService extends AnyWordSpecLike with Matchers with OptionVal
     when(mockHIPITSAStatusService.getITSAStatus(any, any, any, any)(ArgumentMatchers.any(), any())) thenReturn Future.successful(response)
   }
 
+  def mockHIPYearOfMigration(response: Either[ITSAStatusResponse, ITSAStatusYearOfMigrationModel]): Unit = {
+    when(mockHIPITSAStatusService.getYearOfMigration(any)(ArgumentMatchers.any(), any())) thenReturn Future.successful(response)
+  }
 }

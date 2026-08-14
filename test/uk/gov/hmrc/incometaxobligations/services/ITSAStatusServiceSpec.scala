@@ -143,4 +143,47 @@ class ITSAStatusServiceSpec extends TestSupport with BeforeAndAfterEach{
       }
     }
   }
+
+  "Calling the ITSASTatusService.getYearOfMigration method" when {
+    "authorised with a valid request" should {
+      "return the year of migration from HIP - Migrated from earliest year" in {
+        when(itsaStatusConnector.getITSAStatus(any(), any(), any(), any())(any()))
+          .thenReturn(Future.successful(Right(List(
+            ITSAStatusResponseModel("2020-21", Some(List(statusDetail))),
+            ITSAStatusResponseModel("2021-22", Some(List(statusDetail))),
+            ITSAStatusResponseModel("2022-23", Some(List(statusDetail))),
+            ITSAStatusResponseModel("2023-24", Some(List(statusDetail))),
+            ITSAStatusResponseModel("2024-25", Some(List(statusDetail))),
+            ITSAStatusResponseModel("2025-26", Some(List(statusDetail))),
+            ITSAStatusResponseModel("2026-27", Some(List(statusDetail)))
+          ))))
+        val result = service.getYearOfMigration(id)
+        await(result) shouldBe Right(ITSAStatusYearOfMigrationModel("2021"))
+      }
+
+      "return the year of migration from HIP - Migrated from latest year" in {
+        when(itsaStatusConnector.getITSAStatus(any(), any(), any(), any())(any()))
+          .thenReturn(Future.successful(Right(List(
+            ITSAStatusResponseModel("2026-27", Some(List(statusDetail)))
+          ))))
+        val result = service.getYearOfMigration(id)
+        await(result) shouldBe Right(ITSAStatusYearOfMigrationModel("2027"))
+      }
+
+      "return the year of migration from HIP - Migrated from earliest year - Wrong order" in {
+        when(itsaStatusConnector.getITSAStatus(any(), any(), any(), any())(any()))
+          .thenReturn(Future.successful(Right(List(
+            ITSAStatusResponseModel("2022-23", Some(List(statusDetail))),
+            ITSAStatusResponseModel("2026-27", Some(List(statusDetail))),
+            ITSAStatusResponseModel("2024-25", Some(List(statusDetail))),
+            ITSAStatusResponseModel("2021-22", Some(List(statusDetail))),
+            ITSAStatusResponseModel("2020-21", Some(List(statusDetail))),
+            ITSAStatusResponseModel("2023-24", Some(List(statusDetail))),
+            ITSAStatusResponseModel("2025-26", Some(List(statusDetail))),
+          ))))
+        val result = service.getYearOfMigration(id)
+        await(result) shouldBe Right(ITSAStatusYearOfMigrationModel("2021"))
+      }
+    }
+  }
 }

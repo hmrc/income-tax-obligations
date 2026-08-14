@@ -73,6 +73,23 @@ class ITSAStatusController @Inject()(authentication: AuthenticationPredicate,
       optOutUpdateRequest <- json.validate[OptOutUpdateRequest].asOpt
     yield
       itsaStatusService.requestOptOutForTaxYear(taxableEntityId, optOutUpdateRequest)
-  
+
     connectorResponse.map(toResult).getOrElse(toResult(Future.successful(OptOutUpdateResponseFailure.defaultFailure())))
+  }
+
+  def getYearOfMigration(taxableEntityId: String): Action[AnyContent] = authentication.async { implicit request =>
+    itsaStatusService.getYearOfMigration(taxableEntityId).map {
+      case Left(error: ITSAStatusResponseNotFound) =>
+        logger.debug(s"[ITSAStatusController][getYearOfMigration] Year of migration not found: $error")
+        Status(error.status)(Json.toJson(error))
+      case Left(error: ITSAStatusResponseError) =>
+        logger.error(s"[ITSAStatusController][getYearOfMigration] Error Response: $error")
+        Status(error.status)(Json.toJson(error))
+      case Left(error) =>
+        logger.error(s"[ITSAStatusController][getYearOfMigration] Error fetching ITSA Status: $error")
+        InternalServerError("[ITSAStatusController][getYearOfMigration]")
+      case Right(result) =>
+        logger.debug(s"Successful Response: $result")
+        Ok(Json.toJson(result))
+    }
   }
