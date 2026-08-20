@@ -31,7 +31,7 @@ class ObligationsConnectorISpec extends ComponentSpecBase {
   val dateTo = "2021-04-05"
   val getOpenObligationsUrl = s"/enterprise/obligation-data/nino/$testNino/ITSA?status=O"
   val getAllObligationsDateRangeUrl = s"/enterprise/obligation-data/nino/$testNino/ITSA?from=$dateFrom&to=$dateTo"
-  val getFulfilledObligationsUrl = s"/enterprise/obligation-data/nino/$testNino/ITSA?status=F"
+  val getFulfilledObligationsUrl = s"/enterprise/obligation-data/nino/$testNino/ITSA?status=F&from=$dateFrom&to=$dateTo"
 
   "ObligationsConnector" when {
 
@@ -134,7 +134,7 @@ class ObligationsConnectorISpec extends ComponentSpecBase {
 
           val responseBody = successResponse(testNino).toString()
           WiremockHelper.stubGet(getFulfilledObligationsUrl, OK, responseBody)
-          val result = connector.getFulfilledObligations(testNino).futureValue
+          val result = connector.getFulfilledObligations(testNino, "2020-04-06", "2021-04-05").futureValue
 
           result shouldBe obligationsModel
         }
@@ -143,7 +143,7 @@ class ObligationsConnectorISpec extends ComponentSpecBase {
 
           val responseBody = testDeadlineFromJson().toString()
           WiremockHelper.stubGet(getFulfilledObligationsUrl, OK, responseBody)
-          val result = connector.getFulfilledObligations(testNino).futureValue
+          val result = connector.getFulfilledObligations(testNino, "2020-04-06", "2021-04-05").futureValue
 
           result shouldBe ObligationsErrorModel(INTERNAL_SERVER_ERROR, "Json Validation Error. Parsing Report Deadlines Data")
         }
@@ -155,7 +155,7 @@ class ObligationsConnectorISpec extends ComponentSpecBase {
 
           val errorJson = Json.obj("code" -> "NO_DATA_FOUND", "reason" -> "The remote endpoint has indicated that no data can be found.")
           WiremockHelper.stubGet(getFulfilledObligationsUrl, NOT_FOUND, errorJson.toString())
-          val result = connector.getFulfilledObligations(testNino).futureValue
+          val result = connector.getFulfilledObligations(testNino, "2020-04-06", "2021-04-05").futureValue
 
           result shouldBe ObligationsErrorModel(NOT_FOUND, errorJson.toString())
         }
@@ -166,7 +166,7 @@ class ObligationsConnectorISpec extends ComponentSpecBase {
         "return an ObligationsErrorModel when there has been an unexpected error" in {
           val errorJson = Json.obj("code" -> "SERVER_ERROR", "reason" -> "An unexpected error has occurred.")
           WiremockHelper.stubGet(getFulfilledObligationsUrl, INTERNAL_SERVER_ERROR, errorJson.toString())
-          val result = connector.getFulfilledObligations(testNino).futureValue
+          val result = connector.getFulfilledObligations(testNino, "2020-04-06", "2021-04-05").futureValue
 
           result shouldBe ObligationsErrorModel(INTERNAL_SERVER_ERROR, errorJson.toString())
         }

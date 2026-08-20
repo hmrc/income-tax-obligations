@@ -80,7 +80,7 @@ class ObligationsServiceSpec extends TestSupport {
     "the call to DES is successful should return the success model" in {
         stubSuccessfulObligationsCall()
 
-        val result = await(service.getFulfilledObligations(testNino))
+        val result = await(service.getFulfilledObligations(testNino, "2020-04-06", "2021-04-05"))
 
         result shouldBe a [ObligationsModel]
         result shouldBe testObligations
@@ -88,7 +88,7 @@ class ObligationsServiceSpec extends TestSupport {
     "the call to DES fails should return the error model" in {
         stubFailedObligationsCall()
 
-        val result = await(service.getFulfilledObligations(testNino))
+        val result = await(service.getFulfilledObligations(testNino, "2020-04-06", "2021-04-05"))
 
         result shouldBe a [ObligationsErrorModel]
         result shouldBe testReportDeadlinesError
@@ -99,7 +99,7 @@ class ObligationsServiceSpec extends TestSupport {
       .thenReturn(Future.successful(testObligations))
     stub(obligationsConnector.getAllObligationsWithinDateRange(matches(testNino), any[String], any[String])(any[HeaderCarrier]))
       .thenReturn(Future.successful(testObligations))
-    stub(obligationsConnector.getFulfilledObligations(matches(testNino))(any[HeaderCarrier]))
+    stub(obligationsConnector.getFulfilledObligations(matches(testNino), any[String], any[String])(any[HeaderCarrier]))
       .thenReturn(Future.successful(testObligations))
   
   private def stubFailedObligationsCall() =
@@ -107,7 +107,7 @@ class ObligationsServiceSpec extends TestSupport {
       .thenReturn(Future.successful(testReportDeadlinesError))
     stub(obligationsConnector.getAllObligationsWithinDateRange(matches(testNino), any[String], any[String])(any[HeaderCarrier]))
       .thenReturn(Future.successful(testReportDeadlinesError))
-    stub(obligationsConnector.getFulfilledObligations(matches(testNino))(any[HeaderCarrier]))
+    stub(obligationsConnector.getFulfilledObligations(matches(testNino), any[String], any[String])(any[HeaderCarrier]))
       .thenReturn(Future.successful(testReportDeadlinesError))
 
 }
