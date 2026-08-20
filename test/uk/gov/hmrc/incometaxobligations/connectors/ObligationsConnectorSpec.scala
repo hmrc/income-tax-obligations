@@ -44,7 +44,7 @@ class ObligationsConnectorSpec extends TestSupport with MockHttpV2 {
     val headers: Seq[(String, String)] = microserviceAppConfig.desAuthHeaders
     val getOpenObligationsUrl = s"$desUrl/enterprise/obligation-data/nino/$testNino/ITSA?status=O"
     val getAllObligationsDateRangeUrl = s"$desUrl/enterprise/obligation-data/nino/$testNino/ITSA?from=$dateFrom&to=$dateTo"
-    val getFulfilledObligationsUrl = s"$desUrl/enterprise/obligation-data/nino/$testNino/ITSA?status=F"
+    val getFulfilledObligationsUrl = s"$desUrl/enterprise/obligation-data/nino/$testNino/ITSA?status=F&from=$dateFrom&to=$dateTo"
 
     val mockSuccessGetOpenObligations: HttpResponse => OngoingStubbing[Future[HttpResponse]] = setupMockHttpGetWithHeaderCarrier[HttpResponse](getOpenObligationsUrl, headers)(_)
     val mockSuccessGetOpenObligationsDateRange: HttpResponse => OngoingStubbing[Future[HttpResponse]] = setupMockHttpGetWithHeaderCarrier[HttpResponse](getAllObligationsDateRangeUrl, headers)(_)
@@ -142,7 +142,7 @@ class ObligationsConnectorSpec extends TestSupport with MockHttpV2 {
     "return an obligations model" when {
       s"$OK is return with valid json" in new Setup {
         mockSuccessGetFulfilledObligations(successResponse)
-        val result: ObligationsResponseModel = connector.getFulfilledObligations(testNino).futureValue
+        val result: ObligationsResponseModel = connector.getFulfilledObligations(testNino, dateFrom, dateTo).futureValue
 
         result shouldBe testObligations
       }
@@ -152,14 +152,14 @@ class ObligationsConnectorSpec extends TestSupport with MockHttpV2 {
       s"$OK is returned but the json is invalid" in new Setup {
         mockFailedGetFulfilledObligations(badJson)
 
-        val result: ObligationsResponseModel = connector.getFulfilledObligations(testNino).futureValue
+        val result: ObligationsResponseModel = connector.getFulfilledObligations(testNino, dateFrom, dateTo).futureValue
 
         result shouldBe testReportDeadlinesErrorJson
       }
 
       s"a status which is not $OK is returned" in new Setup {
         mockFailedGetFulfilledObligations(badResponse)
-        val result: ObligationsResponseModel = connector.getFulfilledObligations(testNino).futureValue
+        val result: ObligationsResponseModel = connector.getFulfilledObligations(testNino, dateFrom, dateTo).futureValue
 
         result shouldBe testReportDeadlinesError
       }
@@ -167,7 +167,7 @@ class ObligationsConnectorSpec extends TestSupport with MockHttpV2 {
       s"there was a problem making the call" in new Setup {
         val exception = "test exception"
         setupMockFailedHttpV2Get(getFulfilledObligationsUrl, exception)
-        val result: ObligationsResponseModel = connector.getFulfilledObligations(testNino).futureValue
+        val result: ObligationsResponseModel = connector.getFulfilledObligations(testNino, dateFrom, dateTo).futureValue
 
         result shouldBe testReportDeadlinesErrorFutureFailed(exception)
       }

@@ -125,7 +125,7 @@ trait ComponentSpecBase extends TestSuite with CustomMatchers
 
     def getAllObligations(nino: String, from: String, to: String): WSResponse = get(s"/$nino/obligations/from/$from/to/$to")
 
-    def getFulfilledObligations(nino: String): WSResponse = get(s"/$nino/fulfilled-obligations")
+    def getFulfilledObligations(nino: String, from: String, to: String): WSResponse = get(s"/$nino/fulfilled-obligations/from/$from/to/$to")
     
     def getOutStandingChargeDetails(idType: String, idNumber: String, taxYearEndDate: String): WSResponse = get(s"/out-standing-charges/$idType/$idNumber/$taxYearEndDate")
 

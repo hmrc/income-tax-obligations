@@ -168,18 +168,18 @@ class ObligationsControllerISpec extends ComponentSpecBase {
     }
   }
   
-  s"Calling GET ${routes.ObligationsController.getFulfilledObligations(testNino)}" when {
+  s"Calling GET ${routes.ObligationsController.getFulfilledObligations(testNino, "2020-04-06", "2021-04-05")}" when {
     "the user is authenticated" when {
       "the request is valid" should {
         s"return $OK" when {
           "valid obligations are retrieved" in {
             isAuthorised(true)
 
-            DesReportDeadlinesStub.stubGetFulfilledObligations(testNino)
+            DesReportDeadlinesStub.stubGetFulfilledObligations(testNino, "2020-04-06", "2021-04-05")
 
-            val res = Obligations.getFulfilledObligations(testNino)
+            val res = Obligations.getFulfilledObligations(testNino, "2020-04-06", "2021-04-05")
 
-            DesReportDeadlinesStub.verifyGetFulfilledObligations(testNino)
+            DesReportDeadlinesStub.verifyGetFulfilledObligations(testNino, "2020-04-06", "2021-04-05")
 
             res should have(
               httpStatus(OK),
@@ -190,11 +190,11 @@ class ObligationsControllerISpec extends ComponentSpecBase {
         s"return the status retrieved from the call to DES when not $OK" in {
           isAuthorised(true)
 
-          DesReportDeadlinesStub.stubGetFulfilledObligationsError(testNino)(NOT_FOUND, "Error, not found")
+          DesReportDeadlinesStub.stubGetFulfilledObligationsError(testNino, "2020-04-06", "2021-04-05")(NOT_FOUND, "Error, not found")
 
-          val res = Obligations.getFulfilledObligations(testNino)
+          val res = Obligations.getFulfilledObligations(testNino, "2020-04-06", "2021-04-05")
 
-          DesReportDeadlinesStub.verifyGetFulfilledObligations(testNino)
+          DesReportDeadlinesStub.verifyGetFulfilledObligations(testNino, "2020-04-06", "2021-04-05")
 
           res should have(
             httpStatus(NOT_FOUND),
@@ -208,7 +208,7 @@ class ObligationsControllerISpec extends ComponentSpecBase {
       s"return $UNAUTHORIZED" in {
         isAuthorised(false)
 
-        val res = Obligations.getFulfilledObligations(testNino)
+        val res = Obligations.getFulfilledObligations(testNino, "2020-04-06", "2021-04-05")
 
         res should have(
           httpStatus(UNAUTHORIZED),
