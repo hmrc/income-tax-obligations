@@ -31,5 +31,8 @@ object ObligationsErrorModel:
 object ObligationsModel:
   val desReadsApi1330: Reads[ObligationsModel] =
     (__ \ "obligations").read(Reads.seq(GroupedObligationsModel.desReadsApi1330)).map(ObligationsModel(_))
+    
+  val hipReadsApi1330: Reads[ObligationsModel] =
+    (__ \ "success" \ "obligations").read(Reads.seq(GroupedObligationsModel.desReadsApi1330)).map(ObligationsModel(_))
 
   implicit val format: Format[ObligationsModel] = Json.format[ObligationsModel]

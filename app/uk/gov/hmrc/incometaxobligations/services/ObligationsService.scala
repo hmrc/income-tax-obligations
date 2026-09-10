@@ -18,24 +18,43 @@ package uk.gov.hmrc.incometaxobligations.services
 
 import com.google.inject.{Inject, Singleton}
 import uk.gov.hmrc.http.HeaderCarrier
+import uk.gov.hmrc.incometaxobligations.config.AppConfig
 import uk.gov.hmrc.incometaxobligations.connectors.ObligationsConnector
+import uk.gov.hmrc.incometaxobligations.connectors.hip.HipObligationsConnector
 import uk.gov.hmrc.incometaxobligations.models.obligations.ObligationsResponseModel
 
 import scala.concurrent.{ExecutionContext, Future}
 
 @Singleton
-class ObligationsService @Inject()(obligationsConnector: ObligationsConnector):
+class ObligationsService @Inject()(obligationsConnector: ObligationsConnector,
+                                   hipObligationsConnector: HipObligationsConnector,
+                                   val appConfig: AppConfig):
   
   def getOpenObligations(nino: String)
                         (implicit headerCarrier: HeaderCarrier,
-                         ec: ExecutionContext): Future[ObligationsResponseModel] = 
-    obligationsConnector.getOpenObligations(nino)
+                         ec: ExecutionContext): Future[ObligationsResponseModel] = {
+    if (appConfig.useGetObligationsHipPlatform) {
+      hipObligationsConnector.getOpenObligations(nino)
+    } else {
+      obligationsConnector.getOpenObligations(nino)
+    }
+  }
 
 
   def getAllObligationsWithinDateRange(nino: String, from: String, to: String)
                                       (implicit headerCarrier: HeaderCarrier,
-                                       ec: ExecutionContext): Future[ObligationsResponseModel] = 
-    obligationsConnector.getAllObligationsWithinDateRange(nino, from, to)
-  
-  def getFulfilledObligations(nino: String, from: String, to: String)(implicit headerCarrier: HeaderCarrier, ec: ExecutionContext) =
-    obligationsConnector.getFulfilledObligations(nino, from, to)
+                                       ec: ExecutionContext): Future[ObligationsResponseModel] = {
+    if (appConfig.useGetObligationsHipPlatform) {
+      hipObligationsConnector.getAllObligationsWithinDateRange(nino, from, to)
+    } else {
+      obligationsConnector.getAllObligationsWithinDateRange(nino, from, to)
+    }
+  }
+
+  def getFulfilledObligations(nino: String, from: String, to: String)(implicit headerCarrier: HeaderCarrier, ec: ExecutionContext): Future[ObligationsResponseModel] = {
+    if (appConfig.useGetObligationsHipPlatform) {
+      hipObligationsConnector.getFulfilledObligations(nino, from, to)
+    } else {
+      obligationsConnector.getFulfilledObligations(nino, from, to)
+    }
+  }

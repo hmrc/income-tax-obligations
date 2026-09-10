@@ -29,12 +29,14 @@ import scala.concurrent.Future
 import uk.gov.hmrc.incometaxobligations.models.obligations.ObligationsErrorModel
 import uk.gov.hmrc.incometaxobligations.models.obligations.ObligationsModel
 import uk.gov.hmrc.http.HeaderCarrier
+import uk.gov.hmrc.incometaxobligations.connectors.hip.HipObligationsConnector
 
 
 class ObligationsServiceSpec extends TestSupport {
 
   val obligationsConnector: ObligationsConnector = mock(classOf[ObligationsConnector])
-  val service = ObligationsService(obligationsConnector)
+  val hipObligationsConnector: HipObligationsConnector = mock(classOf[HipObligationsConnector])
+  val service = ObligationsService(obligationsConnector, hipObligationsConnector, microserviceAppConfig)
 
   "getOpenObligations" when {
     "the call to DES is successful should return the success model" in {

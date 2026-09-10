@@ -17,8 +17,9 @@
 package uk.gov.hmrc.incometaxobligations.constants
 
 import java.time.LocalDate
-import BaseTestConstants._
-import uk.gov.hmrc.incometaxobligations.models.obligations.ObligationStatus._
+import BaseTestConstants.*
+import play.api.http.Status.INTERNAL_SERVER_ERROR
+import uk.gov.hmrc.incometaxobligations.models.obligations.ObligationStatus.*
 import uk.gov.hmrc.incometaxobligations.models.obligations.{GroupedObligationsModel, ObligationStatus, ObligationsErrorModel, ObligationsModel, SingleObligationModel}
 import play.api.libs.json.{JsValue, Json}
 import play.mvc.Http.Status
@@ -154,6 +155,15 @@ object ObligationsTestConstants {
   val testReportDeadlinesError: ObligationsErrorModel =
     ObligationsErrorModel(Status.INTERNAL_SERVER_ERROR, "Error Message")
 
+  val testNotFoundErrorJson: ObligationsErrorModel =
+    ObligationsErrorModel(Status.NOT_FOUND, etmpErrorResponse("025").toString)
+
+  val testEtmpErrorResponseJson: ObligationsErrorModel =
+    ObligationsErrorModel(Status.UNPROCESSABLE_ENTITY, etmpErrorResponse("005").toString)
+
+  val testEtmpBadBodyResponseJson: ObligationsErrorModel =
+    ObligationsErrorModel(INTERNAL_SERVER_ERROR, "Json Validation Error. Parsing Report Deadlines Error Response")
+
   val testReportDeadlinesErrorJson: ObligationsErrorModel =
     ObligationsErrorModel(Status.INTERNAL_SERVER_ERROR, "Json Validation Error. Parsing Report Deadlines Data")
 
@@ -206,6 +216,16 @@ object ObligationsTestConstants {
     )
   )
 
+  def etmpErrorResponse(errorCode: String): JsValue = {
+    Json.obj(
+      "errors" -> Json.obj(
+        "processingDate" -> "",
+        "code" -> s"$errorCode",
+        "text" -> "Error response message"
+      )
+    )
+  }
+  
   val testObligationsToJson: JsValue = Json.obj(
     "obligations" -> Json.arr(
       Json.obj(
@@ -225,6 +245,10 @@ object ObligationsTestConstants {
 
   //Connector Responses
   val successResponse = HttpResponse(Status.OK, testObligationsFromJson, Map.empty)
+  val hipSuccessResponse = HttpResponse(Status.OK, Json.obj("success" -> testObligationsFromJson), Map.empty)
   val badJson = HttpResponse(Status.OK, Json.parse("{}"), Map.empty)
   val badResponse = HttpResponse(Status.INTERNAL_SERVER_ERROR, "Error Message")
+  val hipEtmpNotFoundResponse = HttpResponse(Status.UNPROCESSABLE_ENTITY, etmpErrorResponse("025"), Map.empty)
+  val hipEtmpErrorResponse = HttpResponse(Status.UNPROCESSABLE_ENTITY, etmpErrorResponse("005"), Map.empty)
+  val hipEtmpErrorBadBodyResponse = HttpResponse(Status.UNPROCESSABLE_ENTITY, "{}", Map.empty)
 }
