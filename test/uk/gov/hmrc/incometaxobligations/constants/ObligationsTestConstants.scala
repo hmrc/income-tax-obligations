@@ -156,10 +156,10 @@ object ObligationsTestConstants {
     ObligationsErrorModel(Status.INTERNAL_SERVER_ERROR, "Error Message")
 
   val testNotFoundErrorJson: ObligationsErrorModel =
-    ObligationsErrorModel(Status.NOT_FOUND, etmpErrorResponse("025").toString)
+    ObligationsErrorModel(Status.NOT_FOUND, Json.prettyPrint(etmpErrorResponse("025")))
 
   val testEtmpErrorResponseJson: ObligationsErrorModel =
-    ObligationsErrorModel(Status.UNPROCESSABLE_ENTITY, etmpErrorResponse("005").toString)
+    ObligationsErrorModel(Status.UNPROCESSABLE_ENTITY, Json.prettyPrint(etmpErrorResponse("005")))
 
   val testEtmpBadBodyResponseJson: ObligationsErrorModel =
     ObligationsErrorModel(INTERNAL_SERVER_ERROR, "Json Validation Error. Parsing Report Deadlines Error Response")
