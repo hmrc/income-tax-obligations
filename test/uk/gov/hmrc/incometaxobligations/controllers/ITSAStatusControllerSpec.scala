@@ -72,6 +72,16 @@ class ITSAStatusControllerSpec extends ControllerBaseSpec with MockMicroserviceA
         contentAsJson(result) shouldBe Json.toJson(errorITSAStatusNotFoundError)
       }
 
+      "called by an authenticated user and ITSAStatusConnector gives an service unavailable error response" in {
+        mockAuth()
+        mockHIPGetITSAStatus(Left(errorServiceUnavailableError))
+        lazy val result = callGetITSAStatus
+
+        contentType(result) shouldBe Some("application/json")
+        status(result) shouldBe errorServiceUnavailableError.status
+        contentAsJson(result) shouldBe Json.toJson(errorServiceUnavailableError)
+      }
+
       "called by an authenticated user and ITSAStatusConnector gives an invalid JSON response" in {
         mockAuth()
         mockHIPGetITSAStatus(Left(badJsonErrorITSAStatusError))
@@ -114,6 +124,16 @@ class ITSAStatusControllerSpec extends ControllerBaseSpec with MockMicroserviceA
         contentType(result) shouldBe Some("application/json")
         status(result) shouldBe errorITSAStatusNotFoundError.status
         contentAsJson(result) shouldBe Json.toJson(errorITSAStatusNotFoundError)
+      }
+
+      "called by an authenticated user and ITSAStatusConnector gives a service unavailable error response" in {
+        mockAuth()
+        mockHIPYearOfMigration(Left(errorServiceUnavailableError))
+        lazy val result = TestITSAStatusController.getYearOfMigration(testNino)(fakeGetRequest())
+
+        contentType(result) shouldBe Some("application/json")
+        status(result) shouldBe errorServiceUnavailableError.status
+        contentAsJson(result) shouldBe Json.toJson(errorServiceUnavailableError)
       }
     }
   }

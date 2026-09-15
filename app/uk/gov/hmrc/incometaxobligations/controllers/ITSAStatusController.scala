@@ -39,20 +39,26 @@ class ITSAStatusController @Inject()(authentication: AuthenticationPredicate,
                                     )
                                     (implicit ec: ExecutionContext) extends BackendController(cc) with Logging:
 
+  private def isDownstreamTimeout(status: Int): Boolean =
+    status == 499 || status == 502 || status == 503
+
   def getITSAStatus(taxableEntityId: String, taxYear: String, futureYears: Boolean,
                     history: Boolean): Action[AnyContent] = authentication.async { implicit request =>
     itsaStatusService.getITSAStatus(taxableEntityId, taxYear, futureYears, history).map {
       case Left(error: ITSAStatusResponseNotFound) =>
-        logger.warn(s"ITSA Status not found: $error")
+        logger.warn(s"[ITSAStatusController][getITSAStatus] ITSA Status not found: $error")
+        Status(error.status)(Json.toJson(error))
+      case Left(error: ITSAStatusResponseError) if isDownstreamTimeout(error.status) =>
+        logger.warn(s"[ITSAStatusController][getITSAStatus] Downstream Timeout Error Response: $error")
         Status(error.status)(Json.toJson(error))
       case Left(error: ITSAStatusResponseError) =>
-        logger.error(s"Error Response: $error")
+        logger.error(s"[ITSAStatusController][getITSAStatus] Error Response: $error")
         Status(error.status)(Json.toJson(error))
       case Left(error) =>
-        logger.error(s"Error fetching ITSA Status: $error")
+        logger.error(s"[ITSAStatusController][getITSAStatus] Error fetching ITSA Status: $error")
         InternalServerError("[ITSAStatusController][getITSAStatus]")
       case Right(result) =>
-        logger.debug(s"Successful Response: $result")
+        logger.debug(s"[ITSAStatusController][getITSAStatus] Successful Response: $result")
         Ok(Json.toJson(result))
     }
   }
@@ -81,6 +87,9 @@ class ITSAStatusController @Inject()(authentication: AuthenticationPredicate,
     itsaStatusService.getYearOfMigration(taxableEntityId).map {
       case Left(error: ITSAStatusResponseNotFound) =>
         logger.debug(s"[ITSAStatusController][getYearOfMigration] Year of migration not found: $error")
+        Status(error.status)(Json.toJson(error))
+      case Left(error: ITSAStatusResponseError) if isDownstreamTimeout(error.status) =>
+        logger.warn(s"[ITSAStatusController][getYearOfMigration] Downstream Timeout Error Response: $error")
         Status(error.status)(Json.toJson(error))
       case Left(error: ITSAStatusResponseError) =>
         logger.error(s"[ITSAStatusController][getYearOfMigration] Error Response: $error")

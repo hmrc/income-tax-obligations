@@ -16,8 +16,8 @@
 
 package uk.gov.hmrc.incometaxobligations.constants
 
-import uk.gov.hmrc.incometaxobligations.models.itsaStatus._
-import play.api.http.Status.{BAD_REQUEST, INTERNAL_SERVER_ERROR, NOT_FOUND}
+import uk.gov.hmrc.incometaxobligations.models.itsaStatus.*
+import play.api.http.Status.{BAD_REQUEST, INTERNAL_SERVER_ERROR, NOT_FOUND, SERVICE_UNAVAILABLE}
 import play.api.libs.json.{JsValue, Json}
 import play.mvc.Http.Status
 import uk.gov.hmrc.http.HttpResponse
@@ -38,6 +38,7 @@ object ITSAStatusTestConstants {
   val errorITSAStatusError = ITSAStatusResponseError(BAD_REQUEST, "Dummy message")
   val badJsonErrorITSAStatusError = ITSAStatusResponseError(INTERNAL_SERVER_ERROR, "Json Validation Error. Parsing ITSA Status Response")
   val errorITSAStatusNotFoundError = ITSAStatusResponseNotFound(NOT_FOUND, "Dummy message")
+  val errorServiceUnavailableError = ITSAStatusResponseNotFound(SERVICE_UNAVAILABLE, "Service Unavailable")
   val failedFutureITSAStatusError = ITSAStatusResponseError(INTERNAL_SERVER_ERROR, s"Unexpected failed future, error")
 
 

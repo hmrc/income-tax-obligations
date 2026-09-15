@@ -32,14 +32,20 @@ class ObligationsController @Inject()(val authentication: AuthenticationPredicat
                                       val obligationsService: ObligationsService,
                                       cc: ControllerComponents
                                      )(implicit ec: ExecutionContext) extends BackendController(cc) with Logging:
+
+  private def isDownstreamTimeout(status: Int): Boolean =
+    status == 499 || status == 502 || status == 503
                                      
   private def handleObligationsResponse(response: ObligationsResponseModel): Result =
     response match
       case success: ObligationsModel =>
-        logger.debug(s"Successful Response: $success")
+        logger.debug(s"[ObligationsController][handleObligationsResponse] Successful Response: $success")
         Ok(Json.toJson(success))
+      case error: ObligationsErrorModel if isDownstreamTimeout(error.status) =>
+        logger.warn(s"[ObligationsController][handleObligationsResponse] Downstream Timeout Error Response: $error")
+        Status(error.status)(Json.toJson(error))
       case error: ObligationsErrorModel =>
-        logger.error(s"Error Response: $error")
+        logger.error(s"[ObligationsController][handleObligationsResponse] Error Response: $error")
         Status(error.status)(Json.toJson(error))
 
   def getOpenObligations(nino: String): Action[AnyContent] = authentication.async { implicit request =>
