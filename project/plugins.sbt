@@ -16,8 +16,4 @@ addSbtPlugin("ch.epfl.scala" % "sbt-scalafix" % "0.11.1")
 
 addSbtPlugin("org.playframework" % "sbt-plugin" % "3.0.10")
 
-addSbtPlugin("uk.gov.hmrc" % "sbt-sass-compiler" % "0.6.0")
-
-
-
 addSbtPlugin("com.timushev.sbt" % "sbt-updates" % "0.6.4")

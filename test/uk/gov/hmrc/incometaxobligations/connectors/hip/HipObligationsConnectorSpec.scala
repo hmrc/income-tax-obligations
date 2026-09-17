@@ -38,14 +38,14 @@ class HipObligationsConnectorSpec extends TestSupport with MockHttpV2 {
       microserviceAppConfig
     )
 
-    val desUrl: String = microserviceAppConfig.hipUrl
+    val hipUrl: String = microserviceAppConfig.hipUrl
     val dateFrom = "2020-04-06"
     val dateTo = "2021-04-05"
 
     val headers: Seq[(String, String)] = microserviceAppConfig.getHIPHeaders(ObligationsHipApi)
-    val getOpenObligationsUrl = s"$desUrl/RESTAdapter/obligation-data/nino/$testNino/ITSA?status=O"
-    val getAllObligationsDateRangeUrl = s"$desUrl/RESTAdapter/obligation-data/nino/$testNino/ITSA?from=$dateFrom&to=$dateTo"
-    val getFulfilledObligationsUrl = s"$desUrl/RESTAdapter/obligation-data/nino/$testNino/ITSA?status=F&from=$dateFrom&to=$dateTo"
+    val getOpenObligationsUrl = s"$hipUrl/etmp/RESTAdapter/obligation-data/nino/$testNino/ITSA?status=O"
+    val getAllObligationsDateRangeUrl = s"$hipUrl/etmp/RESTAdapter/obligation-data/nino/$testNino/ITSA?from=$dateFrom&to=$dateTo"
+    val getFulfilledObligationsUrl = s"$hipUrl/etmp/RESTAdapter/obligation-data/nino/$testNino/ITSA?status=F&from=$dateFrom&to=$dateTo"
 
     val mockSuccessGetOpenObligations: HttpResponse => OngoingStubbing[Future[HttpResponse]] = setupMockHttpGetWithHeaderCarrier[HttpResponse](getOpenObligationsUrl, headers)(_)
     val mockSuccessGetOpenObligationsDateRange: HttpResponse => OngoingStubbing[Future[HttpResponse]] = setupMockHttpGetWithHeaderCarrier[HttpResponse](getAllObligationsDateRangeUrl, headers)(_)
@@ -63,7 +63,7 @@ class HipObligationsConnectorSpec extends TestSupport with MockHttpV2 {
 
       "called for open obligations" in new Setup {
         connector.getOpenObligationsUrl(testNino) shouldBe
-          s"http://localhost:65535/RESTAdapter/obligation-data/nino/$testNino/ITSA?status=O"
+          s"http://localhost:65535/etmp/RESTAdapter/obligation-data/nino/$testNino/ITSA?status=O"
       }
     }
   }
@@ -118,7 +118,7 @@ class HipObligationsConnectorSpec extends TestSupport with MockHttpV2 {
       "the http call returned an ETMP response error with an unreadable body" in new Setup {
         mockFailedGetOpenObligations(hipEtmpErrorBadBodyResponse)
         val result: ObligationsResponseModel = connector.getOpenObligations(testNino).futureValue
-        
+
         result shouldBe testEtmpBadBodyResponseJson
       }
     }
@@ -150,12 +150,34 @@ class HipObligationsConnectorSpec extends TestSupport with MockHttpV2 {
         result shouldBe testReportDeadlinesError
       }
 
+
       s"there was a problem making the call" in new Setup {
         val exception = "test exception"
         setupMockFailedHttpV2Get(getAllObligationsDateRangeUrl, exception)
         val result: ObligationsResponseModel = connector.getAllObligationsWithinDateRange(testNino, dateFrom, dateTo).futureValue
 
         result shouldBe testReportDeadlinesErrorFutureFailed(exception)
+      }
+
+      "the http call returned an ETMP response error for no data found" in new Setup {
+        mockFailedGetOpenObligationsDateRange(hipEtmpNotFoundResponse)
+        val result: ObligationsResponseModel = connector.getAllObligationsWithinDateRange(testNino, dateFrom, dateTo).futureValue
+
+        result shouldBe testNotFoundErrorJson
+      }
+
+      "the http call returned an ETMP response error another failure" in new Setup {
+        mockFailedGetOpenObligationsDateRange(hipEtmpErrorResponse)
+        val result: ObligationsResponseModel = connector.getAllObligationsWithinDateRange(testNino, dateFrom, dateTo).futureValue
+
+        result shouldBe testEtmpErrorResponseJson
+      }
+
+      "the http call returned an ETMP response error with an unreadable body" in new Setup {
+        mockFailedGetOpenObligationsDateRange(hipEtmpErrorBadBodyResponse)
+        val result: ObligationsResponseModel = connector.getAllObligationsWithinDateRange(testNino, dateFrom, dateTo).futureValue
+
+        result shouldBe testEtmpBadBodyResponseJson
       }
     }
   }
@@ -192,6 +214,27 @@ class HipObligationsConnectorSpec extends TestSupport with MockHttpV2 {
         val result: ObligationsResponseModel = connector.getFulfilledObligations(testNino, dateFrom, dateTo).futureValue
 
         result shouldBe testReportDeadlinesErrorFutureFailed(exception)
+      }
+
+      "the http call returned an ETMP response error for no data found" in new Setup {
+        mockFailedGetFulfilledObligations(hipEtmpNotFoundResponse)
+        val result: ObligationsResponseModel = connector.getFulfilledObligations(testNino, dateFrom, dateTo).futureValue
+
+        result shouldBe testNotFoundErrorJson
+      }
+
+      "the http call returned an ETMP response error another failure" in new Setup {
+        mockFailedGetFulfilledObligations(hipEtmpErrorResponse)
+        val result: ObligationsResponseModel = connector.getFulfilledObligations(testNino, dateFrom, dateTo).futureValue
+
+        result shouldBe testEtmpErrorResponseJson
+      }
+
+      "the http call returned an ETMP response error with an unreadable body" in new Setup {
+        mockFailedGetFulfilledObligations(hipEtmpErrorBadBodyResponse)
+        val result: ObligationsResponseModel = connector.getFulfilledObligations(testNino, dateFrom, dateTo).futureValue
+
+        result shouldBe testEtmpBadBodyResponseJson
       }
     }
   }

@@ -16,15 +16,15 @@
 
 package uk.gov.hmrc.incometaxobligations.controllers
 
+import play.api.http.Status.*
 import uk.gov.hmrc.incometaxobligations.constants.BaseIntegrationTestConstants.*
-import uk.gov.hmrc.incometaxobligations.constants.ReportDeadlinesIntegrationTestConstants.*
+import uk.gov.hmrc.incometaxobligations.constants.HipReportDeadlinesIntegrationTestConstants.*
 import uk.gov.hmrc.incometaxobligations.helpers.ComponentSpecBase
-import uk.gov.hmrc.incometaxobligations.helpers.servicemocks.DesReportDeadlinesStub
+import uk.gov.hmrc.incometaxobligations.helpers.servicemocks.HipReportDeadlinesStub
 import uk.gov.hmrc.incometaxobligations.models.obligations.ObligationStatus.Open
 import uk.gov.hmrc.incometaxobligations.models.obligations.{ObligationsErrorModel, ObligationsModel}
-import play.api.http.Status.*
 
-class ObligationsControllerISpec extends ComponentSpecBase {
+class HipObligationsControllerISpec extends ComponentSpecBase {
 
   val from: String = "2020-04-06"
   val to: String = "2021-04-05"
@@ -36,11 +36,11 @@ class ObligationsControllerISpec extends ComponentSpecBase {
           "valid obligations are retrieved" in {
             isAuthorised(true)
 
-            DesReportDeadlinesStub.stubGetDesAllObligations(testNino, from, to)
+            HipReportDeadlinesStub.stubGetHipAllObligations(testNino, from, to)
 
             val res = Obligations.getAllObligations(testNino, from, to)
 
-            DesReportDeadlinesStub.verifyGetDesAllObligations(testNino, from, to)
+            HipReportDeadlinesStub.verifyGetHipAllObligations(testNino, from, to)
 
             res should have(
               httpStatus(OK),
@@ -51,11 +51,11 @@ class ObligationsControllerISpec extends ComponentSpecBase {
           "valid obligations are retrieved when status is Open" in {
             isAuthorised(true)
 
-            DesReportDeadlinesStub.stubGetDesAllObligations(testNino, from, to, Open.code)
+            HipReportDeadlinesStub.stubGetHipAllObligations(testNino, from, to, Open.code)
 
             val res = Obligations.getAllObligations(testNino, from, to)
 
-            DesReportDeadlinesStub.verifyGetDesAllObligations(testNino, from, to)
+            HipReportDeadlinesStub.verifyGetHipAllObligations(testNino, from, to)
 
             res should have(
               httpStatus(OK),
@@ -68,11 +68,11 @@ class ObligationsControllerISpec extends ComponentSpecBase {
             isAuthorised(true)
 
             val error = ObligationsErrorModel(INTERNAL_SERVER_ERROR, "Json Validation Error. Parsing Report Deadlines Data")
-            DesReportDeadlinesStub.stubGetDesAllObligationsError(testNino, from, to)(OK, "{}")
+            HipReportDeadlinesStub.stubGetHipAllObligationsError(testNino, from, to)(OK, "{}")
 
             val res = Obligations.getAllObligations(testNino, from, to)
 
-            DesReportDeadlinesStub.verifyGetDesAllObligations(testNino, from, to)
+            HipReportDeadlinesStub.verifyGetHipAllObligations(testNino, from, to)
 
             res should have(
               httpStatus(INTERNAL_SERVER_ERROR),
@@ -83,11 +83,11 @@ class ObligationsControllerISpec extends ComponentSpecBase {
         s"return the status retrieved from the call to DES when not $OK" in {
           isAuthorised(true)
 
-          DesReportDeadlinesStub.stubGetDesAllObligationsError(testNino, from, to)(NOT_FOUND, "Error, not found")
+          HipReportDeadlinesStub.stubGetHipAllObligationsError(testNino, from, to)(NOT_FOUND, "Error, not found")
 
           val res = Obligations.getAllObligations(testNino, from, to)
 
-          DesReportDeadlinesStub.verifyGetDesAllObligations(testNino, from, to)
+          HipReportDeadlinesStub.verifyGetHipAllObligations(testNino, from, to)
 
           res should have(
             httpStatus(NOT_FOUND),
@@ -117,12 +117,12 @@ class ObligationsControllerISpec extends ComponentSpecBase {
         isAuthorised(true)
 
         And("I wiremock stub a successful Get Report Deadlines response")
-        DesReportDeadlinesStub.stubGetDesOpenReportDeadlines(testNino)
+        HipReportDeadlinesStub.stubGetHipOpenReportDeadlines(testNino)
 
         When(s"I call GET /income-tax-obligations/$testNino/report-deadlines")
         val res = Obligations.getOpenObligations(testNino)
 
-        DesReportDeadlinesStub.verifyGetOpenDesReportDeadlines(testNino)
+        HipReportDeadlinesStub.verifyGetOpenHipReportDeadlines(testNino)
 
         Then("a successful response is returned with the correct model")
 
@@ -138,12 +138,12 @@ class ObligationsControllerISpec extends ComponentSpecBase {
         isAuthorised(true)
 
         And("I wiremock stub an unsuccessful Get Report Deadlines response")
-        DesReportDeadlinesStub.stubGetDesOpenReportDeadlinesError(testNino)
+        HipReportDeadlinesStub.stubGetHipOpenReportDeadlinesError(testNino)
 
         When(s"I call GET /income-tax-obligations/$testNino/report-deadlines")
         val res = Obligations.getOpenObligations(testNino)
 
-        DesReportDeadlinesStub.verifyGetOpenDesReportDeadlines(testNino)
+        HipReportDeadlinesStub.verifyGetOpenHipReportDeadlines(testNino)
 
         Then("a unsuccessful response is returned with an error model")
 
@@ -167,7 +167,7 @@ class ObligationsControllerISpec extends ComponentSpecBase {
       }
     }
   }
-  
+
   s"Calling GET ${routes.ObligationsController.getFulfilledObligations(testNino, "2020-04-06", "2021-04-05")}" when {
     "the user is authenticated" when {
       "the request is valid" should {
@@ -175,11 +175,11 @@ class ObligationsControllerISpec extends ComponentSpecBase {
           "valid obligations are retrieved" in {
             isAuthorised(true)
 
-            DesReportDeadlinesStub.stubGetFulfilledObligations(testNino, "2020-04-06", "2021-04-05")
+            HipReportDeadlinesStub.stubGetFulfilledObligations(testNino, "2020-04-06", "2021-04-05")
 
             val res = Obligations.getFulfilledObligations(testNino, "2020-04-06", "2021-04-05")
 
-            DesReportDeadlinesStub.verifyGetFulfilledObligations(testNino, "2020-04-06", "2021-04-05")
+            HipReportDeadlinesStub.verifyGetFulfilledObligations(testNino, "2020-04-06", "2021-04-05")
 
             res should have(
               httpStatus(OK),
@@ -190,11 +190,11 @@ class ObligationsControllerISpec extends ComponentSpecBase {
         s"return the status retrieved from the call to DES when not $OK" in {
           isAuthorised(true)
 
-          DesReportDeadlinesStub.stubGetFulfilledObligationsError(testNino, "2020-04-06", "2021-04-05")(NOT_FOUND, "Error, not found")
+          HipReportDeadlinesStub.stubGetFulfilledObligationsError(testNino, "2020-04-06", "2021-04-05")(NOT_FOUND, "Error, not found")
 
           val res = Obligations.getFulfilledObligations(testNino, "2020-04-06", "2021-04-05")
 
-          DesReportDeadlinesStub.verifyGetFulfilledObligations(testNino, "2020-04-06", "2021-04-05")
+          HipReportDeadlinesStub.verifyGetFulfilledObligations(testNino, "2020-04-06", "2021-04-05")
 
           res should have(
             httpStatus(NOT_FOUND),

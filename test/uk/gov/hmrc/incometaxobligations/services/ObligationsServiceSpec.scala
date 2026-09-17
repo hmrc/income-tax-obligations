@@ -29,6 +29,7 @@ import scala.concurrent.Future
 import uk.gov.hmrc.incometaxobligations.models.obligations.ObligationsErrorModel
 import uk.gov.hmrc.incometaxobligations.models.obligations.ObligationsModel
 import uk.gov.hmrc.http.HeaderCarrier
+import uk.gov.hmrc.incometaxobligations.config.AppConfig
 import uk.gov.hmrc.incometaxobligations.connectors.hip.HipObligationsConnector
 
 
@@ -36,64 +37,140 @@ class ObligationsServiceSpec extends TestSupport {
 
   val obligationsConnector: ObligationsConnector = mock(classOf[ObligationsConnector])
   val hipObligationsConnector: HipObligationsConnector = mock(classOf[HipObligationsConnector])
-  val service = ObligationsService(obligationsConnector, hipObligationsConnector, microserviceAppConfig)
+  val mockAppConfig: AppConfig = mock(classOf[AppConfig])
+  val service = ObligationsService(obligationsConnector, hipObligationsConnector, mockAppConfig)
 
   "getOpenObligations" when {
-    "the call to DES is successful should return the success model" in {
+    "the HIP feature switch is disabled" when {
+      "the call to DES is successful should return the success model" in {
         stubSuccessfulObligationsCall()
+        stub(mockAppConfig.useGetObligationsHipPlatform).thenReturn(false)
 
         val result = await(service.getOpenObligations(testNino))
 
-        result shouldBe a [ObligationsModel]
+        result shouldBe a[ObligationsModel]
         result shouldBe testObligations
-    }
-    "the call to DES fails should return the error model" in {
+      }
+      "the call to DES fails should return the error model" in {
         stubFailedObligationsCall()
+        stub(mockAppConfig.useGetObligationsHipPlatform).thenReturn(false)
 
         val result = await(service.getOpenObligations(testNino))
 
-        result shouldBe a [ObligationsErrorModel]
+        result shouldBe a[ObligationsErrorModel]
         result shouldBe testReportDeadlinesError
+      }
+    }
+
+    "the HIP feature switch is enabled" when {
+      "the call to HIP is successful should return the success model" in {
+        stubSuccessfulHipObligationsCall()
+        stub(mockAppConfig.useGetObligationsHipPlatform).thenReturn(true)
+
+        val result = await(service.getOpenObligations(testNino))
+
+        result shouldBe a[ObligationsModel]
+        result shouldBe testObligations
+      }
+      "the call to HIP fails should return the error model" in {
+        stubFailedHipObligationsCall()
+        stub(mockAppConfig.useGetObligationsHipPlatform).thenReturn(true)
+
+        val result = await(service.getOpenObligations(testNino))
+
+        result shouldBe a[ObligationsErrorModel]
+        result shouldBe testReportDeadlinesError
+      }
     }
   }
 
   "getAllObligationsWithinDateRange" when {
     val dateFrom = "2023-01-01"
     val dateTo = "2023-12-31"
-    "the call to DES is successful should return the success model" in {
+    "the HIP feature switch is disabled" when {
+      "the call to DES is successful should return the success model" in {
         stubSuccessfulObligationsCall()
+        stub(mockAppConfig.useGetObligationsHipPlatform).thenReturn(false)
 
         val result = await(service.getAllObligationsWithinDateRange(testNino, dateFrom, dateTo))
 
-        result shouldBe a [ObligationsModel]
+        result shouldBe a[ObligationsModel]
         result shouldBe testObligations
-    }
-    "the call to DES fails should return the error model" in {
+      }
+      "the call to DES fails should return the error model" in {
         stubFailedObligationsCall()
+        stub(mockAppConfig.useGetObligationsHipPlatform).thenReturn(false)
 
         val result = await(service.getAllObligationsWithinDateRange(testNino, dateFrom, dateTo))
 
-        result shouldBe a [ObligationsErrorModel]
+        result shouldBe a[ObligationsErrorModel]
         result shouldBe testReportDeadlinesError
+      }
+    }
+
+    "the HIP feature switch is enabled" when {
+      "the call to HIP is successful should return the success model" in {
+        stubSuccessfulHipObligationsCall()
+        stub(mockAppConfig.useGetObligationsHipPlatform).thenReturn(true)
+
+        val result = await(service.getAllObligationsWithinDateRange(testNino, dateFrom, dateTo))
+
+        result shouldBe a[ObligationsModel]
+        result shouldBe testObligations
+      }
+      "the call to HIP fails should return the error model" in {
+        stubFailedHipObligationsCall()
+        stub(mockAppConfig.useGetObligationsHipPlatform).thenReturn(true)
+
+        val result = await(service.getAllObligationsWithinDateRange(testNino, dateFrom, dateTo))
+
+        result shouldBe a[ObligationsErrorModel]
+        result shouldBe testReportDeadlinesError
+      }
     }
   }
 
   "getFulfilledObligations" when {
-    "the call to DES is successful should return the success model" in {
+    "the HIP feature switch is disabled" when {
+      "the call to DES is successful should return the success model" in {
         stubSuccessfulObligationsCall()
+        stub(mockAppConfig.useGetObligationsHipPlatform).thenReturn(false)
 
         val result = await(service.getFulfilledObligations(testNino, "2020-04-06", "2021-04-05"))
 
-        result shouldBe a [ObligationsModel]
+        result shouldBe a[ObligationsModel]
         result shouldBe testObligations
-    }
-    "the call to DES fails should return the error model" in {
+      }
+      "the call to DES fails should return the error model" in {
         stubFailedObligationsCall()
+        stub(mockAppConfig.useGetObligationsHipPlatform).thenReturn(false)
 
         val result = await(service.getFulfilledObligations(testNino, "2020-04-06", "2021-04-05"))
 
-        result shouldBe a [ObligationsErrorModel]
+        result shouldBe a[ObligationsErrorModel]
         result shouldBe testReportDeadlinesError
+      }
+    }
+
+    "the HIP feature switch is enabled" when {
+      "the call to HIP is successful should return the success model" in {
+        stubSuccessfulHipObligationsCall()
+        stub(mockAppConfig.useGetObligationsHipPlatform).thenReturn(true)
+
+        val result = await(service.getFulfilledObligations(testNino, "2020-04-06", "2021-04-05"))
+
+        result shouldBe a[ObligationsModel]
+        result shouldBe testObligations
+      }
+      "the call to HIP fails should return the error model" in {
+        stubFailedHipObligationsCall()
+        stub(mockAppConfig.useGetObligationsHipPlatform).thenReturn(true)
+
+        val result = await(service.getFulfilledObligations(testNino, "2020-04-06", "2021-04-05"))
+
+        result shouldBe a[ObligationsErrorModel]
+        result shouldBe testReportDeadlinesError
+      }
     }
   }
   private def stubSuccessfulObligationsCall() =
@@ -103,6 +180,14 @@ class ObligationsServiceSpec extends TestSupport {
       .thenReturn(Future.successful(testObligations))
     stub(obligationsConnector.getFulfilledObligations(matches(testNino), any[String], any[String])(any[HeaderCarrier]))
       .thenReturn(Future.successful(testObligations))
+
+  private def stubSuccessfulHipObligationsCall() =
+    stub(hipObligationsConnector.getOpenObligations(matches(testNino))(any[HeaderCarrier]))
+      .thenReturn(Future.successful(testObligations))
+    stub(hipObligationsConnector.getAllObligationsWithinDateRange(matches(testNino), any[String], any[String])(any[HeaderCarrier]))
+      .thenReturn(Future.successful(testObligations))
+    stub(hipObligationsConnector.getFulfilledObligations(matches(testNino), any[String], any[String])(any[HeaderCarrier]))
+      .thenReturn(Future.successful(testObligations))
   
   private def stubFailedObligationsCall() =
     stub(obligationsConnector.getOpenObligations(matches(testNino))(any[HeaderCarrier]))
@@ -110,6 +195,14 @@ class ObligationsServiceSpec extends TestSupport {
     stub(obligationsConnector.getAllObligationsWithinDateRange(matches(testNino), any[String], any[String])(any[HeaderCarrier]))
       .thenReturn(Future.successful(testReportDeadlinesError))
     stub(obligationsConnector.getFulfilledObligations(matches(testNino), any[String], any[String])(any[HeaderCarrier]))
+      .thenReturn(Future.successful(testReportDeadlinesError))
+
+  private def stubFailedHipObligationsCall() =
+    stub(hipObligationsConnector.getOpenObligations(matches(testNino))(any[HeaderCarrier]))
+      .thenReturn(Future.successful(testReportDeadlinesError))
+    stub(hipObligationsConnector.getAllObligationsWithinDateRange(matches(testNino), any[String], any[String])(any[HeaderCarrier]))
+      .thenReturn(Future.successful(testReportDeadlinesError))
+    stub(hipObligationsConnector.getFulfilledObligations(matches(testNino), any[String], any[String])(any[HeaderCarrier]))
       .thenReturn(Future.successful(testReportDeadlinesError))
 
 }

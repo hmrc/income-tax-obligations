@@ -34,13 +34,13 @@ class HipObligationsConnector @Inject()(val http: HttpClientV2,
                                     )(implicit ec: ExecutionContext) extends RawResponseReads:
 
   private[connectors] def getOpenObligationsUrl(nino: String): String =
-    s"${appConfig.hipUrl}/RESTAdapter/obligation-data/nino/$nino/ITSA?status=O"
+    s"${appConfig.hipUrl}/etmp/RESTAdapter/obligation-data/nino/$nino/ITSA?status=O"
 
   private[connectors] def getAllObligationsDateRangeUrl(nino: String, from: String, to: String): String =
-    s"${appConfig.hipUrl}/RESTAdapter/obligation-data/nino/$nino/ITSA?from=$from&to=$to"
+    s"${appConfig.hipUrl}/etmp/RESTAdapter/obligation-data/nino/$nino/ITSA?from=$from&to=$to"
 
   private[connectors] def getFulfilledObligationsUrl(nino: String, from: String, to: String): String =
-    s"${appConfig.hipUrl}/RESTAdapter/obligation-data/nino/$nino/ITSA?status=F&from=$from&to=$to"
+    s"${appConfig.hipUrl}/etmp/RESTAdapter/obligation-data/nino/$nino/ITSA?status=F&from=$from&to=$to"
 
   val hipHeaders: Seq[(String, String)] = appConfig.getHIPHeaders(ObligationsHipApi)
 
