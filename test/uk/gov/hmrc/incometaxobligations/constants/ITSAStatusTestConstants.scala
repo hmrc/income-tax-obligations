@@ -36,6 +36,7 @@ object ITSAStatusTestConstants {
     ITSAStatusResponseModel("2019-20", Some(List(statusDetailHip(status, statusReason))))
   val successITSAStatusResponseModelMinimal = ITSAStatusResponseModel("2019-20", None)
   val errorITSAStatusError = ITSAStatusResponseError(BAD_REQUEST, "Dummy message")
+  val connectingClosingITSAStatusError = ITSAStatusResponseError(499, "Dummy message")
   val badJsonErrorITSAStatusError = ITSAStatusResponseError(INTERNAL_SERVER_ERROR, "Json Validation Error. Parsing ITSA Status Response")
   val errorITSAStatusNotFoundError = ITSAStatusResponseNotFound(NOT_FOUND, "Dummy message")
   val errorServiceUnavailableError = ITSAStatusResponseNotFound(SERVICE_UNAVAILABLE, "Service Unavailable")
@@ -180,6 +181,7 @@ object ITSAStatusTestConstants {
 
   val successHttpResponse = HttpResponse(Status.OK, Json.arr(successITSAStatusResponseJson), Map.empty)
   val errorHttpResponse = HttpResponse(Status.BAD_REQUEST, "Dummy message", Map.empty)
+  val connectingClosingHttpResponse = HttpResponse(499, "Dummy message", Map.empty)
   val notFoundHttpResponse = HttpResponse(Status.NOT_FOUND, "Dummy message", Map.empty)
   val badJsonHttpResponse = HttpResponse(Status.OK, Json.obj(), Map.empty)
 

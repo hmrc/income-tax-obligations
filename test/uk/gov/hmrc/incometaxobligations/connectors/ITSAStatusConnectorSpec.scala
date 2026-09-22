@@ -48,6 +48,11 @@ class ITSAStatusConnectorSpec extends TestSupport with MockHttpV2 {
       getITSAStatusCall.futureValue shouldBe Left(errorITSAStatusError)
     }
 
+    "return ITSAStatusResponseError model in case of timeout failure" in {
+      mock(connectingClosingHttpResponse)
+      getITSAStatusCall.futureValue shouldBe Left(connectingClosingITSAStatusError)
+    }
+
     "return ITSAStatusResponseNotFound model in case of failure" in {
       mock(notFoundHttpResponse)
       getITSAStatusCall.futureValue shouldBe Left(errorITSAStatusNotFoundError)

@@ -59,7 +59,6 @@ class ITSAStatusControllerSpec extends ControllerBaseSpec with MockMicroserviceA
         contentType(result) shouldBe Some("application/json")
         status(result) shouldBe OK
         contentAsJson(result) shouldBe Json.toJson(successITSAStatusListResponseJson)
-
       }
 
       "called by an authenticated user and ITSAStatusConnector gives an error response" in {
@@ -70,6 +69,16 @@ class ITSAStatusControllerSpec extends ControllerBaseSpec with MockMicroserviceA
         contentType(result) shouldBe Some("application/json")
         status(result) shouldBe errorITSAStatusNotFoundError.status
         contentAsJson(result) shouldBe Json.toJson(errorITSAStatusNotFoundError)
+      }
+
+      "called by an authenticated user and ITSAStatusConnector gives a timeout error response" in {
+        mockAuth()
+        mockHIPGetITSAStatus(Left(connectingClosingITSAStatusError))
+        lazy val result = callGetITSAStatus
+
+        contentType(result) shouldBe Some("application/json")
+        status(result) shouldBe connectingClosingITSAStatusError.status
+        contentAsJson(result) shouldBe Json.toJson(connectingClosingITSAStatusError)
       }
 
       "called by an authenticated user and ITSAStatusConnector gives an service unavailable error response" in {
@@ -124,6 +133,16 @@ class ITSAStatusControllerSpec extends ControllerBaseSpec with MockMicroserviceA
         contentType(result) shouldBe Some("application/json")
         status(result) shouldBe errorITSAStatusNotFoundError.status
         contentAsJson(result) shouldBe Json.toJson(errorITSAStatusNotFoundError)
+      }
+
+      "called by an authenticated user and ITSAStatusConnector gives a timeout error response" in {
+        mockAuth()
+        mockHIPYearOfMigration(Left(connectingClosingITSAStatusError))
+        lazy val result = TestITSAStatusController.getYearOfMigration(testNino)(fakeGetRequest())
+
+        contentType(result) shouldBe Some("application/json")
+        status(result) shouldBe connectingClosingITSAStatusError.status
+        contentAsJson(result) shouldBe Json.toJson(connectingClosingITSAStatusError)
       }
 
       "called by an authenticated user and ITSAStatusConnector gives a service unavailable error response" in {
