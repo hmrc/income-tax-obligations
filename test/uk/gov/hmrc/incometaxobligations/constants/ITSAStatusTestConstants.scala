@@ -39,7 +39,7 @@ object ITSAStatusTestConstants {
   val connectingClosingITSAStatusError = ITSAStatusResponseError(499, "Dummy message")
   val badJsonErrorITSAStatusError = ITSAStatusResponseError(INTERNAL_SERVER_ERROR, "Json Validation Error. Parsing ITSA Status Response")
   val errorITSAStatusNotFoundError = ITSAStatusResponseNotFound(NOT_FOUND, "Dummy message")
-  val errorServiceUnavailableError = ITSAStatusResponseNotFound(SERVICE_UNAVAILABLE, "Service Unavailable")
+  val errorServiceUnavailableError = ITSAStatusResponseError(SERVICE_UNAVAILABLE, "Service Unavailable")
   val failedFutureITSAStatusError = ITSAStatusResponseError(INTERNAL_SERVER_ERROR, s"Unexpected failed future, error")
 
 
@@ -190,5 +190,5 @@ object ITSAStatusTestConstants {
   val putUnprocessableEntityHttpResponse = HttpResponse(Status.UNPROCESSABLE_ENTITY, unprocessableEntityPutITSAStatusResponseJson, Map("CorrelationId" -> Seq("test-correlation-id")))
   val putInternalServerErrorHttpResponse = HttpResponse(Status.INTERNAL_SERVER_ERROR, internalServerErrorPutITSAStatusResponseJson, Map("CorrelationId" -> Seq("test-correlation-id")))
   val putServiceUnavailableHttpResponse = HttpResponse(Status.SERVICE_UNAVAILABLE, serviceUnavalablePutITSAStatusResponseJson, Map("CorrelationId" -> Seq("test-correlation-id")))
-  
+
 }
