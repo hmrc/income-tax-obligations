@@ -17,66 +17,66 @@
 package uk.gov.hmrc.incometaxobligations.helpers.servicemocks
 
 import play.api.http.Status
-import uk.gov.hmrc.incometaxobligations.constants.ReportDeadlinesIntegrationTestConstants.*
+import uk.gov.hmrc.incometaxobligations.constants.HipReportDeadlinesIntegrationTestConstants.*
 import uk.gov.hmrc.incometaxobligations.helpers.WiremockHelper
 
-object DesReportDeadlinesStub {
+object HipReportDeadlinesStub {
 
   def url(nino: String, openObligations: Boolean = true): String = {
-    s"/enterprise/obligation-data/nino/$nino/ITSA?status=O"
+    s"/etmp/RESTAdapter/obligation-data/nino/$nino/ITSA?status=O"
   }
 
   def allObligationsUrl(nino: String, from: String, to: String): String = {
-    s"/enterprise/obligation-data/nino/$nino/ITSA?from=$from&to=$to"
+    s"/etmp/RESTAdapter/obligation-data/nino/$nino/ITSA?from=$from&to=$to"
   }
 
   def fulfilledObligationsUrl(nino: String, fromDate: String, toDate: String): String = {
-    s"/enterprise/obligation-data/nino/$nino/ITSA?status=F&from=$fromDate&to=$toDate"
+    s"/etmp/RESTAdapter/obligation-data/nino/$nino/ITSA?status=F&from=$fromDate&to=$toDate"
   }
   
-  def stubGetDesOpenReportDeadlines(nino: String): Unit = {
-    val desReportDeadlinesResponse = successResponse(nino).toString
-    WiremockHelper.stubGet(url(nino), Status.OK, desReportDeadlinesResponse)
+  def stubGetHipOpenReportDeadlines(nino: String): Unit = {
+    val hipReportDeadlinesResponse = successResponse(nino).toString
+    WiremockHelper.stubGet(url(nino), Status.OK, hipReportDeadlinesResponse)
   }
 
-  def stubGetDesOpenReportDeadlinesError(nino: String): Unit = {
+  def stubGetHipOpenReportDeadlinesError(nino: String): Unit = {
     val errorResponse = failureResponse("500", "ISE")
     WiremockHelper.stubGet(url(nino), Status.INTERNAL_SERVER_ERROR, errorResponse.toString)
   }
 
-  def verifyGetOpenDesReportDeadlines(nino: String): Unit =
+  def verifyGetOpenHipReportDeadlines(nino: String): Unit =
     WiremockHelper.verifyGet(url(nino))
 
-  def stubGetDesFulfilledReportDeadlines(nino: String): Unit = {
-    val desReportDeadlinesResponse = successResponse(nino).toString
-    WiremockHelper.stubGet(url(nino, openObligations = false), Status.OK, desReportDeadlinesResponse)
+  def stubGetHipFulfilledReportDeadlines(nino: String): Unit = {
+    val hipReportDeadlinesResponse = successResponse(nino).toString
+    WiremockHelper.stubGet(url(nino, openObligations = false), Status.OK, hipReportDeadlinesResponse)
   }
 
-  def stubGetDesFulfilledReportDeadlinesError(nino: String): Unit = {
+  def stubGetHipFulfilledReportDeadlinesError(nino: String): Unit = {
     val errorResponse = failureResponse("500", "ISE")
     WiremockHelper.stubGet(url(nino, openObligations = false), Status.INTERNAL_SERVER_ERROR, errorResponse.toString)
   }
 
-  def verifyGetFulfilledDesReportDeadlines(nino: String): Unit =
+  def verifyGetFulfilledHipReportDeadlines(nino: String): Unit =
     WiremockHelper.verifyGet(url(nino, openObligations = false))
 
-  def stubGetDesAllObligations(nino: String, from: String, to: String): Unit = {
-    val desReportDeadlinesResponse = successResponse(nino).toString
-    WiremockHelper.stubGet(allObligationsUrl(nino, from, to), Status.OK, desReportDeadlinesResponse)
+  def stubGetHipAllObligations(nino: String, from: String, to: String): Unit = {
+    val hipReportDeadlinesResponse = successResponse(nino).toString
+    WiremockHelper.stubGet(allObligationsUrl(nino, from, to), Status.OK, hipReportDeadlinesResponse)
   }
 
-  def stubGetDesAllObligations(nino: String, from: String, to: String, statusCode: String): Unit = {
-    val desReportDeadlinesResponse = successResponseWithStatus(nino, statusCode).toString
-    WiremockHelper.stubGet(allObligationsUrl(nino, from, to), Status.OK, desReportDeadlinesResponse)
+  def stubGetHipAllObligations(nino: String, from: String, to: String, statusCode: String): Unit = {
+    val hipReportDeadlinesResponse = successResponseWithStatus(nino, statusCode).toString
+    WiremockHelper.stubGet(allObligationsUrl(nino, from, to), Status.OK, hipReportDeadlinesResponse)
   }
 
-  def stubGetDesAllObligationsError(nino: String, from: String, to: String)(status: Int, body: String): Unit = {
+  def stubGetHipAllObligationsError(nino: String, from: String, to: String)(status: Int, body: String): Unit = {
     WiremockHelper.stubGet(allObligationsUrl(nino, from, to), status, body)
   }
 
   def stubGetFulfilledObligations(nino: String, fromDate: String, toDate: String): Unit = {
-    val desReportDeadlinesResponse = successResponse(nino).toString
-    WiremockHelper.stubGet(fulfilledObligationsUrl(nino, fromDate, toDate), Status.OK, desReportDeadlinesResponse)
+    val hipReportDeadlinesResponse = successResponse(nino).toString
+    WiremockHelper.stubGet(fulfilledObligationsUrl(nino, fromDate, toDate), Status.OK, hipReportDeadlinesResponse)
   }
 
   def verifyGetFulfilledObligations(nino: String, fromDate: String, toDate: String): Unit = {
@@ -86,7 +86,7 @@ object DesReportDeadlinesStub {
   def stubGetFulfilledObligationsError(nino: String, fromDate: String, toDate: String)(status: Int, body: String): Unit =
     WiremockHelper.stubGet(fulfilledObligationsUrl(nino, fromDate, toDate), status, body)
 
-  def verifyGetDesAllObligations(nino: String, from: String, to: String): Unit = {
+  def verifyGetHipAllObligations(nino: String, from: String, to: String): Unit = {
     WiremockHelper.verifyGet(allObligationsUrl(nino, from, to))
   }
 
