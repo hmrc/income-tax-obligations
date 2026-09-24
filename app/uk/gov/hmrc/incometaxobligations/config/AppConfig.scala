@@ -60,4 +60,4 @@ class AppConfig @Inject()(servicesConfig: ServicesConfig):
   
   val ttlMinutes: Int = servicesConfig.getInt("mongodb.ttlMinutes")
 
-  def useGetObligationsHipPlatform: Boolean = servicesConfig.getBoolean("feature-switch.useGetObligationsHipPlatform")
+  def useGetObligationsHipPlatform: Boolean = servicesConfig.getBoolean("microservice.feature-switch.useGetObligationsHipPlatform")
