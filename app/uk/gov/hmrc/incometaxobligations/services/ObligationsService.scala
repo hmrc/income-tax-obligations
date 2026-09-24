@@ -37,5 +37,5 @@ class ObligationsService @Inject()(obligationsConnector: ObligationsConnector):
                                        ec: ExecutionContext): Future[ObligationsResponseModel] = 
     obligationsConnector.getAllObligationsWithinDateRange(nino, from, to)
   
-  def getFulfilledObligations(nino: String, from: String, to: String)(implicit headerCarrier: HeaderCarrier, ec: ExecutionContext) =
+  def getFulfilledObligations(nino: String, from: String, to: String)(implicit headerCarrier: HeaderCarrier, ec: ExecutionContext): Future[ObligationsResponseModel] =
     obligationsConnector.getFulfilledObligations(nino, from, to)

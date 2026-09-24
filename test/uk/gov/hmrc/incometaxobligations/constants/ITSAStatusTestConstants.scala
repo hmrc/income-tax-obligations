@@ -16,8 +16,8 @@
 
 package uk.gov.hmrc.incometaxobligations.constants
 
-import uk.gov.hmrc.incometaxobligations.models.itsaStatus._
-import play.api.http.Status.{BAD_REQUEST, INTERNAL_SERVER_ERROR, NOT_FOUND}
+import uk.gov.hmrc.incometaxobligations.models.itsaStatus.*
+import play.api.http.Status.{BAD_REQUEST, INTERNAL_SERVER_ERROR, NOT_FOUND, SERVICE_UNAVAILABLE}
 import play.api.libs.json.{JsValue, Json}
 import play.mvc.Http.Status
 import uk.gov.hmrc.http.HttpResponse
@@ -36,8 +36,10 @@ object ITSAStatusTestConstants {
     ITSAStatusResponseModel("2019-20", Some(List(statusDetailHip(status, statusReason))))
   val successITSAStatusResponseModelMinimal = ITSAStatusResponseModel("2019-20", None)
   val errorITSAStatusError = ITSAStatusResponseError(BAD_REQUEST, "Dummy message")
+  val connectingClosingITSAStatusError = ITSAStatusResponseError(499, "Dummy message")
   val badJsonErrorITSAStatusError = ITSAStatusResponseError(INTERNAL_SERVER_ERROR, "Json Validation Error. Parsing ITSA Status Response")
   val errorITSAStatusNotFoundError = ITSAStatusResponseNotFound(NOT_FOUND, "Dummy message")
+  val errorServiceUnavailableError = ITSAStatusResponseError(SERVICE_UNAVAILABLE, "Service Unavailable")
   val failedFutureITSAStatusError = ITSAStatusResponseError(INTERNAL_SERVER_ERROR, s"Unexpected failed future, error")
 
 
@@ -179,6 +181,7 @@ object ITSAStatusTestConstants {
 
   val successHttpResponse = HttpResponse(Status.OK, Json.arr(successITSAStatusResponseJson), Map.empty)
   val errorHttpResponse = HttpResponse(Status.BAD_REQUEST, "Dummy message", Map.empty)
+  val connectingClosingHttpResponse = HttpResponse(499, "Dummy message", Map.empty)
   val notFoundHttpResponse = HttpResponse(Status.NOT_FOUND, "Dummy message", Map.empty)
   val badJsonHttpResponse = HttpResponse(Status.OK, Json.obj(), Map.empty)
 
@@ -187,5 +190,5 @@ object ITSAStatusTestConstants {
   val putUnprocessableEntityHttpResponse = HttpResponse(Status.UNPROCESSABLE_ENTITY, unprocessableEntityPutITSAStatusResponseJson, Map("CorrelationId" -> Seq("test-correlation-id")))
   val putInternalServerErrorHttpResponse = HttpResponse(Status.INTERNAL_SERVER_ERROR, internalServerErrorPutITSAStatusResponseJson, Map("CorrelationId" -> Seq("test-correlation-id")))
   val putServiceUnavailableHttpResponse = HttpResponse(Status.SERVICE_UNAVAILABLE, serviceUnavalablePutITSAStatusResponseJson, Map("CorrelationId" -> Seq("test-correlation-id")))
-  
+
 }
