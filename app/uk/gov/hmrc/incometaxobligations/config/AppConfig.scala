@@ -17,7 +17,8 @@
 package uk.gov.hmrc.incometaxobligations.config
 
 import uk.gov.hmrc.http.HeaderNames
-import uk.gov.hmrc.incometaxobligations.models.hip.HipApi
+import uk.gov.hmrc.incometaxobligations.models.hip.{HipApi, ObligationsHipApi}
+import uk.gov.hmrc.incometaxobligations.utils.DateUtils
 
 import javax.inject.{Inject, Singleton}
 import uk.gov.hmrc.play.bootstrap.config.ServicesConfig
@@ -49,12 +50,23 @@ class AppConfig @Inject()(servicesConfig: ServicesConfig):
 
     s"Basic $encoded"
 
-
-  def getHIPHeaders(hipApi: HipApi, messageTypeHeaderValue: Option[String] = None): Seq[(String, String)] =
+  def getHIPHeaders(hipApi: HipApi, messageTypeHeaderValue: Option[String] = None): Seq[(String, String)] = {
+    val additionalHeaders: Seq[(String, String)] = {
+      hipApi match {
+        case ObligationsHipApi =>
+          Seq(
+            ("X-Transmitting-System", "HIP"),
+            ("X-Originating-System", "MDTP"),
+            ("X-Receipt-Date", DateUtils.nowAsUtc)
+          )
+        case _ => Seq.empty
+      }
+    }
     messageTypeHeaderValue.map(mtv => Seq(("X-Message-Type", mtv))).getOrElse(Seq()) ++ Seq(
-      HeaderNames.authorisation -> getHipCredentials,
-      "correlationId" -> UUID.randomUUID().toString
-    )
+      (HeaderNames.authorisation, getHipCredentials),
+      ("correlationId", UUID.randomUUID().toString)
+    ) ++ additionalHeaders
+  }
 
   val confidenceLevel: Int = servicesConfig.getInt("auth.confidenceLevel")
   
