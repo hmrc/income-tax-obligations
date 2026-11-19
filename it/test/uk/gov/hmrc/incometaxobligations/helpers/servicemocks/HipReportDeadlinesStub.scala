@@ -27,11 +27,11 @@ object HipReportDeadlinesStub {
   }
 
   def allObligationsUrl(nino: String, from: String, to: String): String = {
-    s"/etmp/RESTAdapter/obligation-data/nino/$nino/ITSA?from=$from&to=$to"
+    s"/etmp/RESTAdapter/obligation-data/nino/$nino/ITSA?dateFrom=$from&dateTo=$to"
   }
 
   def fulfilledObligationsUrl(nino: String, fromDate: String, toDate: String): String = {
-    s"/etmp/RESTAdapter/obligation-data/nino/$nino/ITSA?status=F&from=$fromDate&to=$toDate"
+    s"/etmp/RESTAdapter/obligation-data/nino/$nino/ITSA?status=F&dateFrom=$fromDate&dateTo=$toDate"
   }
   
   def stubGetHipOpenReportDeadlines(nino: String): Unit = {
