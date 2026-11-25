@@ -23,15 +23,15 @@ import uk.gov.hmrc.incometaxobligations.helpers.WiremockHelper
 object HipReportDeadlinesStub {
 
   def url(nino: String, openObligations: Boolean = true): String = {
-    s"/etmp/RESTAdapter/obligation-data/nino/$nino/ITSA?status=O"
+    s"/etmp/RESTAdapter/obligation-data/NINO/$nino/ITSA?status=O"
   }
 
   def allObligationsUrl(nino: String, from: String, to: String): String = {
-    s"/etmp/RESTAdapter/obligation-data/nino/$nino/ITSA?dateFrom=$from&dateTo=$to"
+    s"/etmp/RESTAdapter/obligation-data/NINO/$nino/ITSA?dateFrom=$from&dateTo=$to"
   }
 
   def fulfilledObligationsUrl(nino: String, fromDate: String, toDate: String): String = {
-    s"/etmp/RESTAdapter/obligation-data/nino/$nino/ITSA?status=F&dateFrom=$fromDate&dateTo=$toDate"
+    s"/etmp/RESTAdapter/obligation-data/NINO/$nino/ITSA?status=F&dateFrom=$fromDate&dateTo=$toDate"
   }
   
   def stubGetHipOpenReportDeadlines(nino: String): Unit = {
