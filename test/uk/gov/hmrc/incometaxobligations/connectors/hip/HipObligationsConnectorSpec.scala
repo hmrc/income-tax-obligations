@@ -43,9 +43,9 @@ class HipObligationsConnectorSpec extends TestSupport with MockHttpV2 {
     val dateTo = "2021-04-05"
 
     val headers: Seq[(String, String)] = microserviceAppConfig.getHIPHeaders(ObligationsHipApi)
-    val getOpenObligationsUrl = s"$hipUrl/etmp/RESTAdapter/obligation-data/nino/$testNino/ITSA?status=O"
-    val getAllObligationsDateRangeUrl = s"$hipUrl/etmp/RESTAdapter/obligation-data/nino/$testNino/ITSA?dateFrom=$dateFrom&dateTo=$dateTo"
-    val getFulfilledObligationsUrl = s"$hipUrl/etmp/RESTAdapter/obligation-data/nino/$testNino/ITSA?status=F&dateFrom=$dateFrom&dateTo=$dateTo"
+    val getOpenObligationsUrl = s"$hipUrl/etmp/RESTAdapter/obligation-data/NINO/$testNino/ITSA?status=O"
+    val getAllObligationsDateRangeUrl = s"$hipUrl/etmp/RESTAdapter/obligation-data/NINO/$testNino/ITSA?dateFrom=$dateFrom&dateTo=$dateTo"
+    val getFulfilledObligationsUrl = s"$hipUrl/etmp/RESTAdapter/obligation-data/NINO/$testNino/ITSA?status=F&dateFrom=$dateFrom&dateTo=$dateTo"
 
     val mockSuccessGetOpenObligations: HttpResponse => OngoingStubbing[Future[HttpResponse]] = setupMockHttpGetWithHeaderCarrier[HttpResponse](getOpenObligationsUrl, headers)(_)
     val mockSuccessGetOpenObligationsDateRange: HttpResponse => OngoingStubbing[Future[HttpResponse]] = setupMockHttpGetWithHeaderCarrier[HttpResponse](getAllObligationsDateRangeUrl, headers)(_)
@@ -63,7 +63,7 @@ class HipObligationsConnectorSpec extends TestSupport with MockHttpV2 {
 
       "called for open obligations" in new Setup {
         connector.getOpenObligationsUrl(testNino) shouldBe
-          s"http://localhost:65535/etmp/RESTAdapter/obligation-data/nino/$testNino/ITSA?status=O"
+          s"http://localhost:65535/etmp/RESTAdapter/obligation-data/NINO/$testNino/ITSA?status=O"
       }
     }
   }
